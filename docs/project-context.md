@@ -1,6 +1,6 @@
 # Project Context — Intelligence Engine
 
-> **Reference:** `[PROJ-EBQKC-TNHEV] Intelligence Engine @ D:\temp\myprojects\intelligence-engine`
+> **Reference:** Intelligence Engine
 
 ## What This Project Is
 

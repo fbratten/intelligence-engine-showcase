@@ -1,122 +1,119 @@
-# Intelligence Engine — Triple-Search Knowledge Backbone
+# Intelligence Engine
 
-> Kuzu graph + LanceDB vectors + BM25 full-text search across 27 indexed projects and 597MB of code intelligence.
+> Triple-search knowledge backbone — Kuzu graph + LanceDB vectors + BM25 full-text across 27 indexed projects
 
-**734 Tests** | **27 Projects Indexed** | **597MB Data** | **15 MCP Tools**
+## What is Intelligence Engine?
 
----
-
-## What It Does
-
-Intelligence Engine is the **knowledge backbone** for a portfolio of 180+ projects. It indexes source code, documentation, and project structure into three complementary search backends — then exposes everything as MCP tools.
+A **local code intelligence engine** powered by GitNexus patterns — AST-driven knowledge graphs, hybrid search (BM25 + Semantic + Graph), and both MCP server and web UI. Runs 100% locally on WSL Ubuntu.
 
 ```
-Source Code → [INDEX] → Kuzu Graph    → Cypher queries (relationships)
-                      → LanceDB       → Vector search (semantic similarity)
-                      → BM25 Index    → Full-text search (exact keywords)
-                                ↓
-                     ie_search_all → Triple search (all three at once)
+Tree-sitter AST  →  Knowledge Graph  →  Hybrid Search  →  MCP Server / Web UI
+  (6 languages)      (KuzuDB + Cypher)   (BM25+Vector+    (12 tools + React)
+                                          Graph RRF)
 ```
 
----
+## Key Features
 
-## Interactive Demo
-
-**[Which Search Strategy?](demos/search-picker/)** — Decision tree to pick the right search approach for your query.
-
----
-
-## Search Strategies
-
-| Strategy | Backend | Best For | Example |
-|----------|---------|----------|---------|
-| **Graph** | Kuzu (property graph) | Relationships, dependencies, "which projects use X" | `ie_cypher "MATCH (p:Project)-[:USES]->(m:MCP) RETURN p.name"` |
-| **Vector** | LanceDB (embeddings) | Semantic similarity, "find code that does X" | `ie_search_all "error handling patterns"` |
-| **BM25** | Full-text index | Exact names, identifiers, error messages | `ie_search_all "ContentPipelineExecutor"` |
-| **Triple** | All three merged | Not sure what you're looking for | `ie_search_all "music generation"` |
-
----
-
-## MCP Tools (15)
-
-| Tool | Purpose |
-|------|---------|
-| `ie_index` | Index a project (code, docs, structure) |
-| `ie_query` | Graph query with natural language |
-| `ie_cypher` | Direct Cypher query against Kuzu graph |
-| `ie_search_all` | Triple search (graph + vector + BM25) |
-| `ie_context` | Get rich context for an entity |
-| `ie_wiki` | Generate wiki page for any entity |
-| `ie_summarize` | Summarize a project or entity |
-| `ie_batch_summarize` | Batch summarization across projects |
-| `ie_detect_changes` | Detect what changed since last index |
-| `ie_status` | Index health and statistics |
-| `ie_health` | System health check |
-| `ie_quality` | Data quality assessment |
-
----
-
-## What's Indexed
-
-- **27 projects** — source code, documentation, configs
-- **597MB** of structured knowledge
-- **Relationships**: function calls, imports, MCP usage, project dependencies
-- **Entities**: projects, files, functions, classes, MCP servers, tools
-
----
+- **12 MCP Tools** for AI assistant integration
+- **23 REST Endpoints** for web UI and API access
+- **734 Tests** passing across 12 phases
+- **6 Languages** supported (Python, JavaScript, TypeScript/TSX, Java, Go)
+- **Triple Search** — BM25 full-text + LanceDB semantic vectors + Kuzu graph traversal
+- **Reciprocal Rank Fusion** for combining search strategies
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────┐
-│              INTELLIGENCE ENGINE                 │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
-│  │  Kuzu    │  │ LanceDB  │  │  BM25    │      │
-│  │  Graph   │  │  Vector  │  │  Index   │      │
-│  │ (Cypher) │  │ (Embed)  │  │ (FTS)    │      │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘      │
-│       └──────────────┼──────────────┘            │
-│                      ▼                           │
-│              ┌──────────────┐                    │
-│              │ MCP Server   │                    │
-│              │ (15 tools)   │                    │
-│              └──────────────┘                    │
-└─────────────────────────────────────────────────┘
-```
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Parser** | Tree-sitter | AST extraction for 6 languages |
+| **Graph** | KuzuDB (+ NetworkX fallback) | Knowledge graph with Cypher queries |
+| **Search** | BM25 + LanceDB + Graph RRF | Hybrid search with rank fusion |
+| **MCP** | FastMCP | 12 tools for AI assistants |
+| **Web** | FastAPI + React 18 + Sigma.js | REST API + interactive graph explorer |
+| **LLM** | Claude, OpenAI, Gemini, Ollama | AI-powered entity summaries |
 
----
+## Search Strategies
+
+| Strategy | Best For | How It Works |
+|----------|----------|--------------|
+| **BM25** | Exact keyword matching | TF-IDF token scoring |
+| **Semantic** | Natural language queries | sentence-transformers + LanceDB |
+| **Graph** | Structural queries | Kuzu graph traversal + Cypher |
+| **Triple** | Best overall results | RRF fusion of all three |
+
+## Web UI
+
+React 18 + Sigma.js 3 graph explorer with:
+- Interactive force-directed graph visualization (ForceAtlas2)
+- Hybrid search with strategy selector dropdown
+- Entity detail with source code preview and complexity badges
+- Cypher console with monospace table output
+- Performance dashboard (timeline, phases, health, compare)
+- AI-powered entity summaries (multi-provider: Claude, OpenAI, Gemini, Ollama)
+- Batch summarization with progress tracking
+- Code quality metrics (composite scores, complexity histograms, coupling)
+- Graph clustering with community detection
+- Dark-themed UI with custom scrollbars
+
+## MCP Tools (12)
+
+| Tool | Purpose |
+|------|---------|
+| `ie_index` | Index a project into the knowledge graph |
+| `ie_query` | Natural language search across indexed projects |
+| `ie_context` | Get rich context for a specific entity |
+| `ie_detect_changes` | Find what changed since last index |
+| `ie_wiki` | Generate wiki-style documentation |
+| `ie_status` | Project indexing status and statistics |
+| `ie_search_all` | Cross-project search across all indexed repos |
+| `ie_health` | System health check |
+| `ie_cypher` | Execute raw Cypher queries on the graph |
+| `ie_summarize` | AI-powered entity summarization |
+| `ie_batch_summarize` | Bulk summarization with progress tracking |
+| `ie_quality` | Code quality metrics and scores |
+
+## Interactive Demo
+
+**[Which Search Strategy?](demos/search-picker/index.html)** — Interactive decision tree that helps you choose between BM25, semantic, graph, and triple search based on your query type.
 
 ## Documentation
 
-- [Technical Overview](docs/technical-overview.md) — Full system details from CLAUDE.md
-- [Architecture](docs/architecture.md) — Design decisions and search strategy
-- [Decisions](docs/decisions.md) — Key architectural decisions
-- [Project Context](docs/project-context.md) — Background and history
+| Document | Description |
+|----------|-------------|
+| [Technical Overview](docs/technical-overview.md) | Full technical reference with architecture and conventions |
+| [Architecture](docs/architecture.md) | Component details, data flow, and design patterns |
+| [Decisions](docs/decisions.md) | Architectural decision records |
+| [Project Context](docs/project-context.md) | What the project is, problem statement, and approach |
+
+## Implementation Phases
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1 | AST Parsing (Tree-sitter) | Complete |
+| 2 | Knowledge Graph (NetworkX + KuzuDB) | Complete |
+| 3 | Hybrid Search (BM25 + Graph RRF) | Complete |
+| 4 | MCP Server (12 tools via FastMCP) | Complete |
+| 5 | Multi-Project (registry, cross-project search) | Complete |
+| 6 | Semantic Embeddings (sentence-transformers + LanceDB) | Complete |
+| 6.5 | KuzuDB Migration (dual-backend, Cypher queries) | Complete |
+| 7 | Visual UI (React + Sigma.js graph explorer) | Complete |
+| 8 | Multi-Language Support (6 languages) | Complete |
+| 9 | Incremental Indexing (git diff + hash fallback) | Complete |
+| 10 | Performance Dashboard | Complete |
+| 11 | AI-Powered Summaries (multi-provider LLM) | Complete |
+| 12 | Graph Clustering (Louvain community detection) | Complete |
+
+## Technology Stack
+
+- **Language:** Python 3.11+ (backend), TypeScript (frontend)
+- **Graph Database:** KuzuDB with Cypher query support
+- **Vector Store:** LanceDB with sentence-transformers
+- **Full-Text:** BM25 (rank_bm25)
+- **Web Backend:** FastAPI (23 endpoints)
+- **Web Frontend:** React 18 + Sigma.js 3 + Vite
+- **Parser:** Tree-sitter (6 language grammars)
+- **Testing:** pytest (734 tests)
 
 ---
 
-## Quality
-
-- **734 tests** — comprehensive coverage
-- **PAAF health score: 98/100** — highest in portfolio
-- Triple search ensures no single point of failure for queries
-
----
-
-## Related Projects
-
-| Project | Role |
-|---------|------|
-| [SPINE](https://github.com/fbratten/spine) | Context engineering backbone |
-| [portfolio-ops-hub](https://github.com/fbratten/portfolio-ops-hub) | Portfolio coordination (uses IE for knowledge) |
-
----
-
-## Tech Stack
-
-Python 3.11+ | Kuzu (graph DB) | LanceDB (vector DB) | BM25 | FastMCP | pytest
-
----
-
-*Built with [showcase-mcp](https://github.com/fbratten/showcase-mcp)*
+*This showcase was generated from the source project using [showcase-mcp](https://github.com/fbratten/showcase-mcp). Source code is proprietary.*
