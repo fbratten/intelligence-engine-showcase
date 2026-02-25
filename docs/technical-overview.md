@@ -11,11 +11,12 @@
 
 **This project is SPINE-orchestrated.** Before doing ANY work, read and follow:
 
-**Protocol:** SPINE Tiered Usage (included in project)
+**Full Protocol:** `_protocols\SPINE-INIT.md`
+**WSL:** `_protocols/SPINE-INIT.md`
 
 ### Key Rules
 
-1. **SPINE is READ-ONLY** — never create/modify/delete files in `/mnt/d/temp/myprojects/spine/`
+1. **SPINE is READ-ONLY** — never create/modify/delete files in ``
 2. **Classify every task** by tier (1/2/3) before starting
 3. **State tier out loud** before working: "SPINE Classification: Tier [1/2/3]"
 4. **Use subagents** for Tier 2/3 tasks (Explore, Plan, code-architect, etc.)
@@ -41,9 +42,9 @@ Do not default to minimal tool usage. Proactively use available MCP servers and 
 
 ### Full Protocol Location
 
-`D:\temp\myprojects\spine\_protocols\tiered-spine-usage.md`
+`_protocols\tiered-spine-usage.md`
 
-Or WSL: `/mnt/d/temp/myprojects/spine/_protocols/tiered-spine-usage.md`
+Or WSL: `_protocols/tiered-spine-usage.md`
 
 ### Available Capabilities
 
@@ -118,7 +119,7 @@ SPINE Usage (Tier [2/3]):
 ```
 
 <!-- METADATA
-project_path: /mnt/d/temp/myprojects/intelligence-engine
+project_path: intelligence-engine
 analysis_mode: UPDATED
 update_count: 1
 -->
@@ -142,8 +143,6 @@ update_count: 1
 - **Languages Parsed:** Python, JavaScript, TypeScript, TSX, Java, Go
 - **Last Analysis:** 2026-02-25
 <!-- AUTO-UPDATE-END -->
-
-
 
 ## 🏗️ Architecture Overview
 
@@ -176,7 +175,7 @@ See `KB/CLAUDE.md` for main instruction document.
 
 <!-- CUSTOM-START: SETUP -->
 ```bash
-cd /mnt/d/temp/myprojects/intelligence-engine
+cd intelligence-engine
 python3 -m venv .venv
 source .venv/bin/activate
 # Use uv for all package management
@@ -210,8 +209,8 @@ Add your deployment notes here. This section is preserved during updates.
 **Project Identity:**
 - Name: Intelligence Engine
 - Reference: `[PROJ-EBQKC-TNHEV]`
-- Path (Win): `D:\temp\myprojects\intelligence-engine`
-- Path (WSL): `/mnt/d/temp/myprojects/intelligence-engine`
+- Path (Win): `intelligence-engine`
+- Path (WSL): `intelligence-engine`
 
 **Key Constraints:**
 - Personal-use tooling — NOT enterprise
@@ -224,7 +223,7 @@ Add your deployment notes here. This section is preserved during updates.
 
 **KB Reference Documents:**
 - `KB/CLAUDE.md` — Main instruction
-- `KB/REF-architecture.md` — Architecture deep-dive
+- `KB/REF-gitnexus-architecture.md` — Architecture deep-dive
 - `KB/REF-existing-projects-audit.md` — 49+ project audit
 - `KB/REF-implementation-phases.md` — Step-by-step phases
 - `KB/REF-mcp-integration-guide.md` — MCP integration patterns
