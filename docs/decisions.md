@@ -11,7 +11,7 @@
 - KuzuDB has excellent Python bindings
 - Consistent with the development environment
 
-**Alternatives considered:** Node.js (GitNexus's choice — browser-based, not applicable here)
+**Alternatives considered:** Node.js (browser-based, not applicable here)
 
 ---
 

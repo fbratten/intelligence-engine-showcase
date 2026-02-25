@@ -224,7 +224,7 @@ Add your deployment notes here. This section is preserved during updates.
 
 **KB Reference Documents:**
 - `KB/CLAUDE.md` — Main instruction
-- `KB/REF-gitnexus-architecture.md` — Architecture deep-dive
+- `KB/REF-architecture.md` — Architecture deep-dive
 - `KB/REF-existing-projects-audit.md` — 49+ project audit
 - `KB/REF-implementation-phases.md` — Step-by-step phases
 - `KB/REF-mcp-integration-guide.md` — MCP integration patterns

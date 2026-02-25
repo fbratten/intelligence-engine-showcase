@@ -4,7 +4,7 @@
 
 ## What is Intelligence Engine?
 
-A **local code intelligence engine** powered by GitNexus patterns — AST-driven knowledge graphs, hybrid search (BM25 + Semantic + Graph), and both MCP server and web UI. Runs 100% locally on WSL Ubuntu.
+A **local code intelligence engine** — AST-driven knowledge graphs, hybrid search (BM25 + Semantic + Graph), and both MCP server and web UI. Runs 100% locally on WSL Ubuntu.
 
 ```
 Tree-sitter AST  →  Knowledge Graph  →  Hybrid Search  →  MCP Server / Web UI
@@ -113,6 +113,12 @@ React 18 + Sigma.js 3 graph explorer with:
 - **Web Frontend:** React 18 + Sigma.js 3 + Vite
 - **Parser:** Tree-sitter (6 language grammars)
 - **Testing:** pytest (734 tests)
+
+---
+
+## Acknowledgements
+
+The use of [KuzuDB](https://kuzudb.com/) as the graph database backend was inspired by [GitNexus](https://github.com/nicholasgriffintn/GitNexus) by Nicholas Griffin, whose AST-to-graph approach demonstrated the power of property graphs for code intelligence. Thank you for the inspiration.
 
 ---
 

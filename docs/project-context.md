@@ -4,7 +4,7 @@
 
 ## What This Project Is
 
-A **local code intelligence engine** powered by GitNexus patterns — AST-driven knowledge graphs, hybrid search (BM25 + Semantic + Cypher), and MCP server integration — running on WSL Ubuntu alongside the existing MCP server ecosystem.
+A **local code intelligence engine** — AST-driven knowledge graphs, hybrid search (BM25 + Semantic + Cypher), and MCP server integration — running on WSL Ubuntu alongside the existing MCP server ecosystem.
 
 ## Problem Statement
 
@@ -64,7 +64,7 @@ The user manages 113+ projects across `D:\temp\myprojects\`. Current tooling (PA
 
 All detailed reference material is in `KB/`:
 - `CLAUDE.md` — Main instruction document
-- `REF-gitnexus-architecture.md` — GitNexus architecture deep-dive
+- `REF-architecture.md` — Architecture deep-dive
 - `REF-existing-projects-audit.md` — Reusable code audit across 49+ projects
 - `REF-implementation-phases.md` — Detailed step-by-step implementation
 - `REF-mcp-integration-guide.md` — MCP server integration patterns
