@@ -118,7 +118,7 @@ React 18 + Sigma.js 3 graph explorer with:
 
 ## Acknowledgements
 
-The use of [KuzuDB](https://kuzudb.com/) as the graph database backend was inspired by [GitNexus](https://github.com/nicholasgriffintn/GitNexus) by Nicholas Griffin, whose AST-to-graph approach demonstrated the power of property graphs for code intelligence. Thank you for the inspiration.
+This project was heavily inspired by [GitNexus](https://github.com/nicholasgriffintn/GitNexus) by Nicholas Griffin. GitNexus pointed me to [KuzuDB](https://kuzudb.com/) — which saved me from jumping through hoops trying to get "true" Cypher query support working with other graph databases — and to [Sigma.js](https://www.sigmajs.org/) for interactive graph visualization, which turned out to be a perfect fit for exploring code knowledge graphs in the browser. Thank you, Nicholas, for the inspiration.
 
 ---
 
