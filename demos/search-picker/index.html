@@ -1,218 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Which Search Strategy? - Intelligence Engine</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        
-.question-card {
-    transition: all 0.3s ease;
-}
-.option-btn {
-    transition: all 0.2s ease;
-}
-.option-btn:hover {
-    transform: translateX(4px);
-}
-.result-card {
-    animation: fadeIn 0.5s ease;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.history-item {
-    border-left: 3px solid #3b82f6;
-}
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which Search Strategy? - Intelligence Engine</title>
+<link rel="stylesheet" href="../retro-demo.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <header class="mb-8">
-            <a href="../" class="text-blue-600 hover:underline text-sm">&larr; Back to Intelligence Engine</a>
-            <h1 class="text-3xl font-bold mt-4 text-gray-800">Which Search Strategy?</h1>
-            <p class="text-gray-600 mt-2">Choose the right search approach for your query</p>
-        </header>
+<body>
+<div class="container">
+  <a href="../../" class="back-link">&lt; BACK TO SHOWCASE</a>
+  <h1>WHICH SEARCH STRATEGY?</h1>
+  <p class="subtitle">Answer questions to find the best search approach for your query.</p>
 
-        <main id="demo-container" class="bg-white rounded-lg shadow-lg p-6">
-            
-<div id="decision-tree-app">
-    <!-- Question Display -->
-    <div id="question-container" class="question-card">
-        <div id="progress" class="mb-4 flex items-center text-sm text-gray-500">
-            <span id="question-number">Question 1</span>
-            <span class="mx-2">/</span>
-            <span id="total-questions">0</span>
-        </div>
-
-        <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-6"></h2>
-
-        <div id="options-container" class="space-y-3"></div>
+  <div id="app">
+    <div id="question-container"></div>
+    <div id="result-container" style="display:none"></div>
+    <div id="history-panel" style="display:none; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--retro-border);">
+      <div class="section-title">YOUR PATH</div>
+      <div id="history-items"></div>
     </div>
-
-    <!-- Result Display (hidden initially) -->
-    <div id="result-container" class="result-card hidden">
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-            </div>
-            <h2 id="result-title" class="text-2xl font-bold text-gray-800"></h2>
-            <p id="result-description" class="text-gray-600 mt-2"></p>
-        </div>
-
-        <div id="result-details" class="bg-gray-50 rounded-lg p-4 mb-6"></div>
-
-        <button id="restart-btn" class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            Start Over
-        </button>
-    </div>
-
-    <!-- History Panel -->
-    <div id="history-panel" class="mt-6 pt-6 border-t border-gray-200 hidden">
-        <h3 class="text-sm font-medium text-gray-500 mb-3">Your Path</h3>
-        <div id="history-items" class="space-y-2"></div>
-    </div>
+  </div>
 </div>
+<script>
+const questions = [
+  { id: 'q1', text: 'WHAT ARE YOU LOOKING FOR?', options: [
+    { text: 'Relationships between entities', icon: '&#x1F578;', next: 'result_graph' },
+    { text: 'Semantically similar content', icon: '&#x1F9E0;', next: 'result_vector' },
+    { text: 'Exact keyword match', icon: '&#x1F50D;', next: 'result_bm25' },
+    { text: 'Not sure -- search everything', icon: '&#x1F30C;', next: 'result_all' },
+    { text: 'Generate a wiki page', icon: '&#x1F4DA;', next: 'result_wiki' },
+  ]},
+  { id: 'q_graph_type', text: 'WHAT KIND OF RELATIONSHIP?', options: [
+    { text: 'Which projects use which MCP servers', icon: '&#x1F517;', next: 'result_cypher' },
+    { text: 'Function call chains', icon: '&#x26D3;', next: 'result_cypher' },
+    { text: 'Import dependencies', icon: '&#x1F4E6;', next: 'result_cypher' },
+  ]},
+];
 
-        </main>
+const results = {
+  result_graph: {
+    tool: 'ie_query',
+    title: 'ie_query (Graph Search)',
+    desc: 'Uses Kuzu property graph with Cypher queries. Best for: relationships, dependencies, "which projects use X". 597MB indexed data, structural queries.',
+    example: 'ie_query(project="agent-comm", query="transport", mode="hybrid")'
+  },
+  result_vector: {
+    tool: 'ie_search_all',
+    title: 'ie_search_all (Vector Search)',
+    desc: 'Uses LanceDB with embeddings. Best for: semantic similarity, "find code that does X", natural language queries across all projects.',
+    example: 'ie_search_all(query="send data between agents", mode="semantic")'
+  },
+  result_bm25: {
+    tool: 'ie_search_all',
+    title: 'ie_search_all (BM25 Full-Text)',
+    desc: 'Classic keyword search with BM25 ranking. Best for: exact function names, specific error messages, known identifiers.',
+    example: 'ie_search_all(query="HTTPTransport", mode="bm25")'
+  },
+  result_all: {
+    tool: 'ie_search_all',
+    title: 'ie_search_all (Triple Search)',
+    desc: 'Runs all three strategies in parallel and merges results. Best when you\'re not sure what you\'re looking for -- covers graph + vector + BM25.',
+    example: 'ie_search_all(query="message routing", mode="hybrid", limit=20)'
+  },
+  result_wiki: {
+    tool: 'ie_wiki',
+    title: 'ie_wiki',
+    desc: 'Generates a wiki-style page about any indexed entity. Combines graph relationships, code context, and documentation into a single reference.',
+    example: 'ie_wiki(project="agent-comm")'
+  },
+  result_cypher: {
+    tool: 'ie_cypher',
+    title: 'ie_cypher (Direct Cypher)',
+    desc: 'Write custom Cypher queries against the Kuzu graph. Full power for complex relationship queries, path finding, and aggregations.',
+    example: 'ie_cypher(project="agent-comm",\n  query="MATCH (a)-[:CALLS]->(b) RETURN a.name, b.name LIMIT 20")'
+  },
+};
 
-        
-
-        <footer class="mt-8 text-center text-gray-500 text-sm">
-            <p>Part of the <a href="../" class="text-blue-600 hover:underline">Intelligence Engine</a> showcase</p>
-        </footer>
-    </div>
-
-    <script>
-        
-const demoData = {"questions": [{"id": "q1", "options": [{"next": "result_graph", "text": "Relationships between entities"}, {"next": "result_vector", "text": "Semantically similar content"}, {"next": "result_bm25", "text": "Exact keyword match"}, {"next": "result_all", "text": "Not sure \u2014 search everything"}, {"next": "result_wiki", "text": "Generate a wiki page"}], "text": "What are you looking for?"}, {"id": "q_graph_type", "options": [{"next": "result_cypher", "text": "Which projects use which MCP servers"}, {"next": "result_cypher", "text": "Function call chains"}, {"next": "result_cypher", "text": "Import dependencies"}], "text": "What kind of relationship?"}], "results": {"result_all": {"description": "Runs all three strategies in parallel and merges results. Best when you\u0027re not sure what you\u0027re looking for \u2014 covers graph + vector + BM25.", "title": "ie_search_all (Triple Search)"}, "result_bm25": {"description": "Classic keyword search with BM25 ranking. Best for: exact function names, specific error messages, known identifiers.", "title": "ie_search_all (BM25 Full-Text)"}, "result_cypher": {"description": "Write custom Cypher queries against the Kuzu graph. Full power for complex relationship queries, path finding, and aggregations.", "title": "ie_cypher (Direct Cypher)"}, "result_graph": {"description": "Uses Kuzu property graph with Cypher queries. Best for: relationships, dependencies, \u0027which projects use X\u0027. 597MB indexed data, structural queries.", "title": "ie_query (Graph Search)"}, "result_vector": {"description": "Uses LanceDB with embeddings. Best for: semantic similarity, \u0027find code that does X\u0027, natural language queries across 27 projects.", "title": "ie_search_all (Vector Search)"}, "result_wiki": {"description": "Generates a wiki-style page about any indexed entity. Combines graph relationships, code context, and documentation into a single reference.", "title": "ie_wiki"}}};
-const questions = demoData.questions || [];
-const results = demoData.results || {};
-
-let currentQuestionIndex = 0;
 let history = [];
 
-function init() {
-    if (questions.length === 0) {
-        document.getElementById('question-container').innerHTML =
-            '<p class="text-gray-500">No questions configured for this demo.</p>';
-        return;
-    }
-    showQuestion(questions[0].id);
-    document.getElementById('restart-btn').addEventListener('click', restart);
+function showQuestion(qId) {
+  const q = questions.find(x => x.id === qId);
+  if (!q) return;
+
+  const qc = document.getElementById('question-container');
+  const rc = document.getElementById('result-container');
+  qc.style.display = 'block';
+  rc.style.display = 'none';
+
+  let html = '<div class="retro-card" style="animation: fadeIn 0.3s ease">';
+  html += '<h2>' + q.text + '</h2><div style="margin-top: 16px;">';
+  q.options.forEach((opt, i) => {
+    html += '<div class="retro-option" onclick="selectOption(\'' + q.id + '\',' + i + ')">' +
+      '<div class="icon">' + opt.icon + '</div>' +
+      '<div><div class="label">' + opt.text + '</div></div></div>';
+  });
+  html += '</div></div>';
+  qc.innerHTML = html;
+  updateHistory();
 }
 
-function findQuestion(id) {
-    return questions.find(q => q.id === id);
+function selectOption(qId, idx) {
+  const q = questions.find(x => x.id === qId);
+  const opt = q.options[idx];
+  history.push({ question: q.text, answer: opt.text });
+
+  if (opt.next && opt.next.startsWith('result_')) {
+    showResult(opt.next);
+  } else {
+    showQuestion(opt.next);
+  }
 }
 
-function showQuestion(questionId) {
-    const question = findQuestion(questionId);
-    if (!question) {
-        console.error('Question not found:', questionId);
-        return;
-    }
+function showResult(rId) {
+  const r = results[rId];
+  const qc = document.getElementById('question-container');
+  const rc = document.getElementById('result-container');
+  qc.style.display = 'none';
+  rc.style.display = 'block';
 
-    const questionIndex = questions.findIndex(q => q.id === questionId);
-    document.getElementById('question-number').textContent = `Question ${questionIndex + 1}`;
-    document.getElementById('question-text').textContent = question.text;
-
-    const optionsContainer = document.getElementById('options-container');
-    optionsContainer.innerHTML = '';
-
-    question.options.forEach((option, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500';
-        btn.innerHTML = `
-            <span class="flex items-center">
-                <span class="w-6 h-6 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
-                    ${String.fromCharCode(65 + index)}
-                </span>
-                <span>${option.text}</span>
-            </span>
-        `;
-        btn.addEventListener('click', () => selectOption(question, option));
-        optionsContainer.appendChild(btn);
-    });
-
-    document.getElementById('question-container').classList.remove('hidden');
-    document.getElementById('result-container').classList.add('hidden');
-    updateHistory();
-}
-
-function selectOption(question, option) {
-    history.push({
-        question: question.text,
-        answer: option.text
-    });
-
-    if (option.next && option.next.startsWith('result_')) {
-        showResult(option.next);
-    } else if (option.next) {
-        showQuestion(option.next);
-    } else {
-        // No next defined, show default result
-        showResult('default');
-    }
-}
-
-function showResult(resultId) {
-    const result = results[resultId] || {
-        title: 'Complete',
-        description: 'Thank you for completing the assessment.'
-    };
-
-    document.getElementById('result-title').textContent = result.title;
-    document.getElementById('result-description').textContent = result.description;
-
-    const detailsContainer = document.getElementById('result-details');
-    if (result.details) {
-        detailsContainer.innerHTML = `
-            <h4 class="font-medium text-gray-700 mb-2">Details</h4>
-            <p class="text-gray-600 text-sm">${result.details}</p>
-        `;
-        detailsContainer.classList.remove('hidden');
-    } else {
-        detailsContainer.classList.add('hidden');
-    }
-
-    document.getElementById('question-container').classList.add('hidden');
-    document.getElementById('result-container').classList.remove('hidden');
-    updateHistory();
+  rc.innerHTML = '<div class="retro-result" style="animation: fadeIn 0.3s ease">' +
+    '<h2>RECOMMENDED</h2>' +
+    '<div class="tool-name">' + r.tool + '</div>' +
+    '<p style="color: var(--retro-text); margin: 8px 0; font-family: Orbitron, sans-serif; font-size: 16px;">' + r.title + '</p>' +
+    '<p style="color: var(--retro-text-dim); margin: 12px 0; line-height: 1.6;">' + r.desc + '</p>' +
+    '<pre class="retro-pre">' + r.example + '</pre>' +
+    '<button class="retro-btn" onclick="restart()">[ START OVER ]</button>' +
+    '</div>';
+  updateHistory();
 }
 
 function updateHistory() {
-    const historyPanel = document.getElementById('history-panel');
-    const historyItems = document.getElementById('history-items');
-
-    if (history.length === 0) {
-        historyPanel.classList.add('hidden');
-        return;
-    }
-
-    historyPanel.classList.remove('hidden');
-    historyItems.innerHTML = history.map((item, index) => `
-        <div class="history-item pl-4 py-2">
-            <p class="text-sm text-gray-600">${item.question}</p>
-            <p class="text-sm font-medium text-gray-800">${item.answer}</p>
-        </div>
-    `).join('');
+  const panel = document.getElementById('history-panel');
+  const items = document.getElementById('history-items');
+  if (history.length === 0) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  items.innerHTML = history.map(h =>
+    '<div style="border-left: 2px solid var(--neon-cyan); padding: 6px 0 6px 12px; margin-bottom: 6px;">' +
+    '<div style="font-size: 12px; color: var(--retro-text-dim);">' + h.question + '</div>' +
+    '<div style="font-size: 13px; color: var(--neon-cyan);">' + h.answer + '</div></div>'
+  ).join('');
 }
 
 function restart() {
-    history = [];
-    currentQuestionIndex = 0;
-    showQuestion(questions[0].id);
+  history = [];
+  showQuestion('q1');
 }
 
-// Initialize on load
-init();
-
-    </script>
+showQuestion('q1');
+</script>
 </body>
 </html>

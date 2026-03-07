@@ -367,8 +367,27 @@ Content MCP at 1092 nodes and 2049 edges -- the graph handles large codebases sm
 
 ## Interactive Demos
 
-- [Search Strategy Picker](https://fbratten.github.io/intelligence-engine-showcase/demos/search-strategy-picker/) -- Decision tree to choose the right search approach
-- [Tool Selector](https://fbratten.github.io/intelligence-engine-showcase/demos/tool-selector/) -- Find the right IE tool for your task
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0;">
+
+  <a href="https://fbratten.github.io/intelligence-engine-showcase/demos/tool-selector/" style="text-decoration: none; display: block; background: #12122a; border: 2px solid #1a1a3e; border-radius: 4px; padding: 20px; transition: all 0.2s; text-align: center;">
+    <div style="font-family: 'Press Start 2P', monospace; color: #00ffff; font-size: 11px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0,255,255,0.5);">TOOL SELECTOR</div>
+    <div style="font-size: 32px; margin-bottom: 10px;">&#x1F578;</div>
+    <div style="font-family: 'Share Tech Mono', monospace; color: #6a6a9a; font-size: 12px;">Find the right IE tool for your task</div>
+  </a>
+
+  <a href="https://fbratten.github.io/intelligence-engine-showcase/demos/search-strategy-picker/" style="text-decoration: none; display: block; background: #12122a; border: 2px solid #1a1a3e; border-radius: 4px; padding: 20px; transition: all 0.2s; text-align: center;">
+    <div style="font-family: 'Press Start 2P', monospace; color: #ff00ff; font-size: 11px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,0,255,0.5);">SEARCH PICKER</div>
+    <div style="font-size: 32px; margin-bottom: 10px;">&#x1F50D;</div>
+    <div style="font-family: 'Share Tech Mono', monospace; color: #6a6a9a; font-size: 12px;">Compare BM25, Semantic & Hybrid strategies</div>
+  </a>
+
+  <a href="https://fbratten.github.io/intelligence-engine-showcase/demos/search-picker/" style="text-decoration: none; display: block; background: #12122a; border: 2px solid #1a1a3e; border-radius: 4px; padding: 20px; transition: all 0.2s; text-align: center;">
+    <div style="font-family: 'Press Start 2P', monospace; color: #39ff14; font-size: 11px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(57,255,20,0.5);">QUERY GUIDE</div>
+    <div style="font-size: 32px; margin-bottom: 10px;">&#x1F916;</div>
+    <div style="font-family: 'Share Tech Mono', monospace; color: #6a6a9a; font-size: 12px;">Interactive decision tree for search queries</div>
+  </a>
+
+</div>
 
 ---
 
