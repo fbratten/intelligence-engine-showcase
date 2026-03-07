@@ -1,0 +1,396 @@
+/* ============================================================
+   INTELLIGENCE ENGINE — Retro Sci-Fi Theme
+   Commodore 64 / Last Ninja / 80s Neon
+   ============================================================ */
+
+/* --- Neon Palette --- */
+:root {
+  --neon-cyan: #00ffff;
+  --neon-magenta: #ff00ff;
+  --neon-green: #39ff14;
+  --neon-amber: #ffbf00;
+  --neon-pink: #ff6ec7;
+  --neon-blue: #4d4dff;
+  --neon-purple: #b967ff;
+  --retro-bg: #0a0a1a;
+  --retro-bg-alt: #0f0f2a;
+  --retro-card: #12122a;
+  --retro-border: #1a1a3e;
+  --retro-text: #c0c0e0;
+  --retro-text-dim: #6a6a9a;
+  --grid-color: rgba(0, 255, 255, 0.03);
+  --scanline-color: rgba(0, 0, 0, 0.12);
+  --glow-cyan: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.15);
+  --glow-magenta: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 40px rgba(255, 0, 255, 0.15);
+  --glow-green: 0 0 10px rgba(57, 255, 20, 0.5), 0 0 40px rgba(57, 255, 20, 0.15);
+}
+
+/* --- Scanline Overlay (CRT effect) --- */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--scanline-color) 0px,
+    var(--scanline-color) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* --- Grid Background --- */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* --- Base Overrides --- */
+body,
+.side-bar,
+.main,
+.main-content-wrap {
+  background-color: var(--retro-bg) !important;
+  color: var(--retro-text) !important;
+}
+
+/* --- Typography --- */
+.site-title {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 14px !important;
+  color: var(--neon-cyan) !important;
+  text-shadow: var(--glow-cyan) !important;
+  letter-spacing: 2px !important;
+  line-height: 1.6 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', sans-serif !important;
+  letter-spacing: 1px !important;
+}
+
+h1 {
+  color: var(--neon-cyan) !important;
+  text-shadow: var(--glow-cyan) !important;
+  border-bottom: 2px solid var(--neon-cyan) !important;
+  padding-bottom: 12px !important;
+}
+
+h2 {
+  color: var(--neon-magenta) !important;
+  text-shadow: var(--glow-magenta) !important;
+}
+
+h3 {
+  color: var(--neon-green) !important;
+  text-shadow: var(--glow-green) !important;
+}
+
+h4 {
+  color: var(--neon-amber) !important;
+}
+
+h5, h6 {
+  color: var(--neon-purple) !important;
+}
+
+/* --- Code Blocks (CRT Terminal) --- */
+code {
+  font-family: 'Share Tech Mono', 'Courier New', monospace !important;
+  background-color: #0d0d20 !important;
+  color: var(--neon-green) !important;
+  border: 1px solid var(--retro-border) !important;
+  border-radius: 2px !important;
+  padding: 2px 6px !important;
+  font-size: 0.9em !important;
+}
+
+pre {
+  background-color: #080818 !important;
+  border: 1px solid var(--neon-cyan) !important;
+  border-radius: 4px !important;
+  box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.03), var(--glow-cyan) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+pre code {
+  color: var(--neon-green) !important;
+  background: transparent !important;
+  border: none !important;
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
+}
+
+/* CRT curvature on code blocks */
+pre::before {
+  content: ">";
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  color: var(--neon-cyan);
+  font-family: 'Share Tech Mono', monospace;
+  opacity: 0.4;
+  font-size: 14px;
+}
+
+/* --- Links --- */
+a {
+  color: var(--neon-cyan) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+a:hover {
+  color: var(--neon-magenta) !important;
+  text-shadow: var(--glow-magenta) !important;
+  text-decoration: none !important;
+}
+
+/* --- Sidebar Navigation --- */
+.side-bar {
+  background-color: var(--retro-bg-alt) !important;
+  border-right: 1px solid var(--retro-border) !important;
+}
+
+.nav-list .nav-list-item .nav-list-link {
+  font-family: 'Share Tech Mono', monospace !important;
+  color: var(--retro-text-dim) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.2s ease !important;
+}
+
+.nav-list .nav-list-item .nav-list-link:hover {
+  color: var(--neon-cyan) !important;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.3) !important;
+  background-color: rgba(0, 255, 255, 0.05) !important;
+}
+
+.nav-list .nav-list-item .nav-list-link.active {
+  color: var(--neon-magenta) !important;
+  text-shadow: var(--glow-magenta) !important;
+  border-left: 3px solid var(--neon-magenta) !important;
+  background-color: rgba(255, 0, 255, 0.05) !important;
+  font-weight: 700 !important;
+}
+
+/* --- Tables --- */
+table {
+  border-collapse: collapse !important;
+}
+
+th {
+  font-family: 'Orbitron', sans-serif !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  color: var(--neon-cyan) !important;
+  background-color: rgba(0, 255, 255, 0.08) !important;
+  border-bottom: 2px solid var(--neon-cyan) !important;
+  padding: 10px 14px !important;
+}
+
+td {
+  border-bottom: 1px solid var(--retro-border) !important;
+  padding: 8px 14px !important;
+  font-family: 'Share Tech Mono', monospace !important;
+  font-size: 13px !important;
+  color: var(--retro-text) !important;
+}
+
+tr:hover td {
+  background-color: rgba(0, 255, 255, 0.03) !important;
+}
+
+/* --- Blockquotes --- */
+blockquote {
+  border-left: 3px solid var(--neon-purple) !important;
+  background-color: rgba(185, 103, 255, 0.05) !important;
+  color: var(--retro-text) !important;
+  font-style: italic !important;
+  padding: 12px 20px !important;
+}
+
+/* --- Lists --- */
+li {
+  color: var(--retro-text) !important;
+}
+
+li::marker {
+  color: var(--neon-cyan) !important;
+}
+
+/* --- Horizontal Rules --- */
+hr {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--neon-cyan),
+    var(--neon-magenta),
+    var(--neon-cyan),
+    transparent
+  ) !important;
+  margin: 32px 0 !important;
+}
+
+/* --- Search --- */
+.search-input {
+  font-family: 'Share Tech Mono', monospace !important;
+  background-color: var(--retro-card) !important;
+  border: 1px solid var(--retro-border) !important;
+  color: var(--neon-cyan) !important;
+}
+
+.search-input:focus {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: var(--glow-cyan) !important;
+}
+
+.search-input::placeholder {
+  color: var(--retro-text-dim) !important;
+}
+
+/* --- Badges / Labels --- */
+.label {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 9px !important;
+  letter-spacing: 1px !important;
+}
+
+/* --- Aux Links (top right) --- */
+.aux-nav .aux-nav-list-item a {
+  font-family: 'Share Tech Mono', monospace !important;
+  color: var(--neon-amber) !important;
+  font-size: 12px !important;
+}
+
+.aux-nav .aux-nav-list-item a:hover {
+  color: var(--neon-magenta) !important;
+  text-shadow: var(--glow-magenta) !important;
+}
+
+/* --- Footer --- */
+.site-footer {
+  font-family: 'Share Tech Mono', monospace !important;
+  color: var(--retro-text-dim) !important;
+  border-top: 1px solid var(--retro-border) !important;
+  font-size: 12px !important;
+}
+
+/* --- Images --- */
+img {
+  border: 1px solid var(--retro-border) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+img:hover {
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.2), 0 0 60px rgba(0, 255, 255, 0.1) !important;
+  border-color: var(--neon-magenta) !important;
+}
+
+/* --- Strong / Bold --- */
+strong {
+  color: var(--neon-amber) !important;
+}
+
+/* --- Back to Top Button --- */
+.top-link {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 10px !important;
+  color: var(--neon-cyan) !important;
+  border: 1px solid var(--neon-cyan) !important;
+  background: var(--retro-bg) !important;
+}
+
+.top-link:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+  box-shadow: var(--glow-cyan) !important;
+}
+
+/* --- Copy Code Button --- */
+.copy-code-button {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 8px !important;
+  color: var(--neon-cyan) !important;
+  background: var(--retro-bg-alt) !important;
+  border: 1px solid var(--retro-border) !important;
+}
+
+.copy-code-button:hover {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: var(--glow-cyan) !important;
+}
+
+/* --- Neon Divider Animation --- */
+@keyframes neonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+h1 {
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+/* --- Scrollbar (Webkit) --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--retro-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--retro-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+/* --- Mobile adjustments --- */
+@media (max-width: 768px) {
+  .site-title {
+    font-size: 11px !important;
+  }
+
+  h1 {
+    font-size: 22px !important;
+  }
+
+  h2 {
+    font-size: 18px !important;
+  }
+}
+
+/* --- Selection highlight --- */
+::selection {
+  background: var(--neon-magenta) !important;
+  color: #000 !important;
+}
+
+::-moz-selection {
+  background: var(--neon-magenta) !important;
+  color: #000 !important;
+}
