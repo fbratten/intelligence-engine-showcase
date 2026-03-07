@@ -1,3 +1,8 @@
+---
+title: Decisions
+nav_order: 5
+---
+
 # Decisions Log — Intelligence Engine
 
 ## ADR-001: Python over Node.js

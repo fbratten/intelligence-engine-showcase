@@ -1,3 +1,8 @@
+---
+title: Project Context
+nav_order: 6
+---
+
 # Project Context — Intelligence Engine
 
 > **Reference:** `[PROJ-EBQKC-TNHEV] Intelligence Engine @ intelligence-engine`

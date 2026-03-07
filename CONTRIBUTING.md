@@ -1,3 +1,8 @@
+---
+title: Contributing
+nav_order: 99
+---
+
 # Contributing
 
 Thank you for your interest in Intelligence Engine!
