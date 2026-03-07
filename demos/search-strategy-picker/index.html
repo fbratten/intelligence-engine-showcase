@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Strategy Picker - Intelligence Engine</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; --green: #3fb950; --purple: #bc8cff; --amber: #d29922; --pink: #f778ba; --red: #f85149; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+  h1 { color: var(--blue); font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: #8b949e; margin-bottom: 32px; }
+  .container { max-width: 900px; margin: 0 auto; }
+
+  .strategies { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  @media (max-width: 768px) { .strategies { grid-template-columns: 1fr; } }
+  .strategy { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
+  .strategy:hover { transform: translateY(-2px); }
+  .strategy.active { border-color: var(--blue); box-shadow: 0 0 20px rgba(88,166,255,0.15); }
+  .strategy .name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .strategy .tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 8px; }
+  .strategy .desc { font-size: 13px; color: #8b949e; line-height: 1.5; }
+
+  .s-hybrid .name { color: var(--purple); }
+  .s-hybrid .tag { background: #2e1a3e; color: var(--purple); }
+  .s-hybrid.active { border-color: var(--purple); box-shadow: 0 0 20px rgba(188,140,255,0.15); }
+  .s-bm25 .name { color: var(--green); }
+  .s-bm25 .tag { background: #1a2e1a; color: var(--green); }
+  .s-bm25.active { border-color: var(--green); box-shadow: 0 0 20px rgba(63,185,80,0.15); }
+  .s-semantic .name { color: var(--amber); }
+  .s-semantic .tag { background: #2e2a1a; color: var(--amber); }
+  .s-semantic.active { border-color: var(--amber); box-shadow: 0 0 20px rgba(210,153,34,0.15); }
+
+  .detail { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; animation: fadeIn 0.3s ease; display: none; }
+  .detail.visible { display: block; }
+  .detail h2 { font-size: 20px; margin-bottom: 16px; }
+  .detail table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .detail th { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); color: #8b949e; font-size: 13px; text-transform: uppercase; }
+  .detail td { padding: 8px 12px; border-bottom: 1px solid #21262d; font-size: 14px; }
+  .detail .good { color: var(--green); }
+  .detail .ok { color: var(--amber); }
+  .detail .bad { color: var(--red); }
+  .detail pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-size: 13px; color: var(--blue); overflow-x: auto; margin: 12px 0; }
+  .section-title { color: var(--purple); font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+
+  .comparison { margin-top: 32px; }
+  .comparison h2 { color: var(--blue); margin-bottom: 16px; }
+  .comparison table { width: 100%; border-collapse: collapse; }
+  .comparison th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); color: var(--blue); font-size: 14px; }
+  .comparison td { padding: 10px 12px; border-bottom: 1px solid #21262d; font-size: 14px; }
+  .comparison tr:hover { background: #1a1e2e; }
+  .bar { height: 6px; border-radius: 3px; display: inline-block; vertical-align: middle; margin-left: 8px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Search Strategy Picker</h1>
+  <p class="subtitle">Choose the right search strategy for your use case. Click a strategy to see details.</p>
+
+  <div class="strategies">
+    <div class="strategy s-hybrid" onclick="select('hybrid')">
+      <div class="name">Hybrid</div>
+      <div class="tag">RECOMMENDED</div>
+      <div class="desc">Combines all three strategies. BM25 for exact matches, semantic for conceptual similarity, graph for structural context. Best overall results.</div>
+    </div>
+    <div class="strategy s-bm25" onclick="select('bm25')">
+      <div class="name">BM25</div>
+      <div class="tag">KEYWORD</div>
+      <div class="desc">Classic full-text search. Best for exact function names, class names, or specific identifiers. Fastest strategy.</div>
+    </div>
+    <div class="strategy s-semantic" onclick="select('semantic')">
+      <div class="name">Semantic</div>
+      <div class="tag">VECTOR</div>
+      <div class="desc">Embedding-based similarity search. Best for conceptual queries like "error handling" or "database connection" where exact terms may differ.</div>
+    </div>
+  </div>
+
+  <div id="detail-hybrid" class="detail">
+    <h2 style="color: var(--purple);">Hybrid Search</h2>
+    <p>Combines BM25 keyword matching, semantic vector similarity, and graph context expansion into a single ranked result set.</p>
+    <div class="section-title">When to use</div>
+    <ul style="color: #8b949e; padding-left: 20px; line-height: 1.8;">
+      <li>General exploration -- you're not sure what you're looking for</li>
+      <li>Finding related code across naming conventions</li>
+      <li>Discovering both direct matches and conceptually similar entities</li>
+    </ul>
+    <div class="section-title">How it works</div>
+    <table>
+      <tr><td>1. BM25</td><td>Finds entities matching keywords (exact tokens)</td><td class="good">Fast</td></tr>
+      <tr><td>2. Semantic</td><td>Finds entities with similar meaning (embeddings)</td><td class="ok">Medium</td></tr>
+      <tr><td>3. Graph</td><td>Expands results to include structurally related entities</td><td class="ok">Medium</td></tr>
+      <tr><td>4. Merge</td><td>Deduplicate, re-rank by combined score</td><td class="good">Fast</td></tr>
+    </table>
+    <div class="section-title">Example</div>
+    <pre>ie_query(project="agent-comm", query="message routing", mode="hybrid")
+# Returns: Coordinator (0.015), close_connection (0.014), set_transport (0.013)
+# Tags: bm25+semantic+graph</pre>
+  </div>
+
+  <div id="detail-bm25" class="detail">
+    <h2 style="color: var(--green);">BM25 Keyword Search</h2>
+    <p>Traditional full-text search using the BM25 ranking algorithm. Matches exact tokens in entity names, docstrings, and file paths.</p>
+    <div class="section-title">When to use</div>
+    <ul style="color: #8b949e; padding-left: 20px; line-height: 1.8;">
+      <li>You know the exact function or class name</li>
+      <li>Searching for specific identifiers or variable names</li>
+      <li>Need fastest possible results</li>
+    </ul>
+    <div class="section-title">Strengths & Weaknesses</div>
+    <table>
+      <tr><td>Exact name match</td><td class="good">Excellent</td></tr>
+      <tr><td>Partial name match</td><td class="good">Good</td></tr>
+      <tr><td>Conceptual similarity</td><td class="bad">Poor</td></tr>
+      <tr><td>Speed</td><td class="good">Fastest</td></tr>
+    </table>
+    <div class="section-title">Example</div>
+    <pre>ie_query(project="agent-comm", query="HTTPTransport", mode="bm25")
+# Returns exact matches for HTTPTransport class and related test functions</pre>
+  </div>
+
+  <div id="detail-semantic" class="detail">
+    <h2 style="color: var(--amber);">Semantic Vector Search</h2>
+    <p>Uses all-MiniLM-L6-v2 embeddings to find entities by meaning rather than exact text. Queries and entities are compared in 384-dimensional vector space.</p>
+    <div class="section-title">When to use</div>
+    <ul style="color: #8b949e; padding-left: 20px; line-height: 1.8;">
+      <li>Conceptual queries: "error handling", "database connection"</li>
+      <li>Finding similar implementations with different naming</li>
+      <li>Exploring code you're unfamiliar with</li>
+    </ul>
+    <div class="section-title">Strengths & Weaknesses</div>
+    <table>
+      <tr><td>Conceptual matching</td><td class="good">Excellent</td></tr>
+      <tr><td>Cross-naming discovery</td><td class="good">Good</td></tr>
+      <tr><td>Exact name match</td><td class="ok">Fair</td></tr>
+      <tr><td>Speed</td><td class="ok">Medium</td></tr>
+    </table>
+    <div class="section-title">Example</div>
+    <pre>ie_query(project="agent-comm", query="send data between agents", mode="semantic")
+# Returns: Coordinator, MessageSpool, HTTPTransport (by meaning, not name)</pre>
+  </div>
+
+  <div class="comparison">
+    <h2>Strategy Comparison</h2>
+    <table>
+      <thead>
+        <tr><th>Criteria</th><th>Hybrid</th><th>BM25</th><th>Semantic</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Speed</td><td>Medium</td><td style="color:var(--green)">Fastest</td><td>Medium</td></tr>
+        <tr><td>Exact matches</td><td style="color:var(--green)">Yes</td><td style="color:var(--green)">Yes</td><td>Approximate</td></tr>
+        <tr><td>Conceptual search</td><td style="color:var(--green)">Yes</td><td style="color:var(--red)">No</td><td style="color:var(--green)">Yes</td></tr>
+        <tr><td>Graph expansion</td><td style="color:var(--green)">Yes</td><td style="color:var(--red)">No</td><td style="color:var(--red)">No</td></tr>
+        <tr><td>Best for</td><td>General use</td><td>Known names</td><td>Exploration</td></tr>
+        <tr><td>Relevance scoring</td><td>Combined</td><td>TF-IDF</td><td>Cosine</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+let activeStrategy = null;
+function select(s) {
+  document.querySelectorAll('.strategy').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.detail').forEach(el => el.classList.remove('visible'));
+  if (activeStrategy === s) { activeStrategy = null; return; }
+  activeStrategy = s;
+  document.querySelector('.s-' + s).classList.add('active');
+  document.getElementById('detail-' + s).classList.add('visible');
+}
+</script>
+</body>
+</html>

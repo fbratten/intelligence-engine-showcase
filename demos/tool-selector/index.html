@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IE Tool Selector - Intelligence Engine</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #c9d1d9; --blue: #58a6ff; --green: #3fb950; --purple: #bc8cff; --amber: #d29922; --pink: #f778ba; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+  h1 { color: var(--blue); font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: #8b949e; margin-bottom: 32px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  .question { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; animation: fadeIn 0.3s ease; }
+  .question h2 { color: var(--purple); font-size: 18px; margin-bottom: 16px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
+  .option:hover { border-color: var(--blue); background: #1a2332; }
+  .option .icon { font-size: 20px; min-width: 28px; text-align: center; }
+  .option .label { font-weight: 600; color: var(--text); }
+  .option .desc { font-size: 13px; color: #8b949e; margin-top: 2px; }
+  .result { background: var(--card); border: 2px solid var(--green); border-radius: 12px; padding: 24px; animation: fadeIn 0.3s ease; }
+  .result h2 { color: var(--green); font-size: 20px; margin-bottom: 8px; }
+  .result .tool-name { font-family: monospace; background: #1a2e1a; color: var(--green); padding: 4px 10px; border-radius: 4px; font-size: 16px; display: inline-block; margin: 8px 0; }
+  .result .description { color: #8b949e; margin: 12px 0; line-height: 1.6; }
+  .result .example { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .result .example pre { color: var(--blue); font-family: monospace; font-size: 13px; white-space: pre-wrap; }
+  .restart { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 16px; font-size: 14px; }
+  .restart:hover { border-color: var(--blue); color: var(--blue); }
+  .breadcrumb { color: #8b949e; font-size: 13px; margin-bottom: 16px; }
+  .breadcrumb span { color: var(--blue); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>IE Tool Selector</h1>
+  <p class="subtitle">Answer a few questions to find the right Intelligence Engine tool for your task.</p>
+  <div id="app"></div>
+</div>
+<script>
+const tree = {
+  id: 'start', question: 'What do you want to do?', options: [
+    { label: 'Search for code', icon: '🔍', desc: 'Find functions, classes, or patterns', next: {
+      id: 'search', question: 'What kind of search?', options: [
+        { label: 'Within one project', icon: '📁', desc: 'Search a specific project', result: { tool: 'ie_query', desc: 'Search within a single project using hybrid strategies (BM25 + semantic + graph).', example: 'ie_query(project="agent-comm", query="message routing", mode="hybrid")' }},
+        { label: 'Across all projects', icon: '🌐', desc: 'Find something across the entire codebase', result: { tool: 'ie_search_all', desc: 'Cross-project hybrid search across all 54 indexed projects.', example: 'ie_search_all(query="embedding provider", mode="hybrid", limit=20)' }},
+        { label: 'Using a graph query', icon: '🕸️', desc: 'Cypher query for structural patterns', result: { tool: 'ie_cypher', desc: 'Run arbitrary Cypher queries against the knowledge graph. Supports all KuzuDB Cypher syntax.', example: 'ie_cypher(project="agent-comm", query="MATCH (n:Entity) WHERE n.entity_type = \'class\' RETURN n.name, n.file LIMIT 20")' }},
+      ]
+    }},
+    { label: 'Analyze code quality', icon: '📊', desc: 'Metrics, complexity, coverage', next: {
+      id: 'quality', question: 'What metrics do you need?', options: [
+        { label: 'Quality score & complexity', icon: '📈', desc: 'Composite score, cyclomatic complexity, doc coverage', result: { tool: 'ie_quality', desc: 'Code quality analysis: composite score, complexity distribution, documentation coverage, function length stats, coupling metrics.', example: 'ie_quality(project="agent-comm")\n# Returns: Score 69.1, CC avg 1.6, max 43, Doc coverage 39.6%' }},
+        { label: 'Structural health', icon: '🏥', desc: 'Dead code, cycles, hubs', result: { tool: 'ie_health', desc: 'Health check: dead code detection, circular dependency finder, hub identification, concentration metrics.', example: 'ie_health(project="agent-comm")\n# Returns: 239 dead code, 0 cycles, 12.0% hub concentration' }},
+        { label: 'Change impact', icon: '💥', desc: 'Blast radius of recent changes', result: { tool: 'ie_detect_changes', desc: 'Detect changes since last index and calculate blast radius. Uses git diff to find modified files and traces downstream impact.', example: 'ie_detect_changes(project="agent-comm")\n# Returns: changed files, affected callers, test files to re-run' }},
+      ]
+    }},
+    { label: 'Understand an entity', icon: '🧬', desc: 'Deep dive into a function or class', next: {
+      id: 'understand', question: 'What do you want to know?', options: [
+        { label: 'Callers & dependencies', icon: '🔗', desc: 'Who calls this? What does it call?', result: { tool: 'ie_context', desc: 'Full context for an entity: direct callers, callees, blast radius across depth levels.', example: 'ie_context(project="agent-comm", entity="Coordinator")\n# Returns: 3 direct callers, 6 blast radius, used by SQLiteTransport, relay_server, test_spool' }},
+        { label: 'AI explanation', icon: '🤖', desc: 'Natural language summary', result: { tool: 'ie_summarize', desc: 'AI-powered entity summarization using configured LLM provider (Claude, OpenAI, Gemini, or Ollama).', example: 'ie_summarize(project="agent-comm", entity="Coordinator")' }},
+        { label: 'Full documentation', icon: '📚', desc: 'Generate wiki from graph', result: { tool: 'ie_wiki', desc: 'Auto-generate documentation from knowledge graph structure. Creates overview, module breakdown, and relationship documentation.', example: 'ie_wiki(project="agent-comm")' }},
+      ]
+    }},
+    { label: 'Index a project', icon: '📥', desc: 'Parse source code into the graph', result: { tool: 'ie_index', desc: 'Index a project: parse source code, extract entities and relationships, build search indexes. Supports Python, JS, TS, TSX, Java, Go.', example: 'ie_index(project_path="/path/to/project", project_name="my-project")' }},
+    { label: 'Check index status', icon: '📋', desc: 'See what is indexed', result: { tool: 'ie_status', desc: 'Check indexing status for one or all projects. Shows entity counts, timestamps, graph stats, semantic availability.', example: 'ie_status()  # All projects\nie_status(project="agent-comm")  # Specific project' }},
+    { label: 'Batch AI analysis', icon: '⚡', desc: 'Summarize many entities at once', result: { tool: 'ie_batch_summarize', desc: 'Queue and run AI summarization across multiple entities in a project. Processes in parallel for efficiency.', example: 'ie_batch_summarize(project="agent-comm", entities=["Coordinator", "MessageSpool", "HTTPTransport"])' }},
+  ]
+};
+
+let path = [];
+function render(node) {
+  const app = document.getElementById('app');
+  let html = '';
+  if (path.length > 0) {
+    html += '<div class="breadcrumb">Start' + path.map(p => ' → <span>' + p + '</span>').join('') + '</div>';
+  }
+  if (node.result) {
+    const r = node.result;
+    html += `<div class="result">
+      <h2>Recommended Tool</h2>
+      <div class="tool-name">${r.tool}</div>
+      <div class="description">${r.desc}</div>
+      <div class="example"><pre>${r.example}</pre></div>
+      <button class="restart" onclick="restart()">Start Over</button>
+    </div>`;
+  } else {
+    html += `<div class="question"><h2>${node.question}</h2><div class="options">`;
+    node.options.forEach((opt, i) => {
+      html += `<div class="option" onclick="choose(${i})">
+        <div class="icon">${opt.icon}</div>
+        <div><div class="label">${opt.label}</div><div class="desc">${opt.desc}</div></div>
+      </div>`;
+    });
+    html += '</div></div>';
+  }
+  app.innerHTML = html;
+}
+
+let current = tree;
+function choose(i) {
+  const opt = current.options[i];
+  path.push(opt.label);
+  if (opt.result) { current = opt; render(opt); }
+  else if (opt.next) { current = opt.next; render(current); }
+}
+function restart() { path = []; current = tree; render(current); }
+render(current);
+</script>
+</body>
+</html>
