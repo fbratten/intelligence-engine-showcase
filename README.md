@@ -1,9 +1,3 @@
----
-layout: default
-title: Home
-nav_order: 0
----
-
 # Intelligence Engine
 
 > AST-driven code knowledge graphs with hybrid search -- Kuzu graph + LanceDB vectors + BM25 full-text across 54 indexed projects.
