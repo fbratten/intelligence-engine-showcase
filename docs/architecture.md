@@ -1,213 +1,229 @@
+# Architecture -- Intelligence Engine
+
+## Overview
+
+Intelligence Engine is a domain-agnostic knowledge graph platform. It ingests structured data (source code, archaeological records, or any domain defined by a YAML schema), builds a typed knowledge graph, and exposes it through hybrid search, a REST API, an MCP server, and a web UI.
+
+The core abstraction is the **domain schema** -- a single YAML file that defines everything the engine needs to handle a new knowledge domain without code changes.
+
 ---
-title: "Architecture"
-nav_order: 4
----
 
-# Architecture
-
-Intelligence Engine is a multi-layer system that parses source code into a searchable graph, augmented with semantic embeddings and full-text indexing. This document describes each layer and how data flows between them.
-
----
-
-## Frontend (React 18 + TypeScript)
-
-The UI is a single-page React 18 application bundled with **Vite**.
-
-**Graph Rendering** -- Sigma.js 3.0 drives an interactive force-directed graph layout rendered via WebGL. Nodes represent code entities; edges represent relationships (calls, imports, inheritance).
-
-**Cypher Console** -- CodeMirror 6 provides syntax-highlighted editing for Cypher queries issued directly against the graph database.
-
-### Component Tree
+## High-Level Pipeline
 
 ```
-App
-├── GraphCanvas          # Sigma.js WebGL canvas, force-directed layout
-├── Sidebar              # Navigation, project selector, filters
-├── EntityDetail         # Inspector panel for selected node
-├── Dashboard            # 6 tabs: Overview, Quality, Dependencies, Complexity, Coverage, AI
-├── CypherConsole        # CodeMirror 6 editor + result table
-├── SearchBar            # Unified search (graph, semantic, keyword)
-└── Settings             # Provider config, theme, indexing controls
-```
-
-Vite serves the dev build with HMR and proxies API requests to the FastAPI backend.
-
----
-
-## REST API (FastAPI, port 8420)
-
-The backend exposes 30+ endpoints organised into route groups:
-
-| Route Group | Purpose |
-|---|---|
-| `/api/projects` | Project CRUD, indexing triggers, project metadata |
-| `/api/search` | Unified search across graph, vector, and BM25 |
-| `/api/graph` | Node/edge queries, subgraph extraction, Cypher pass-through |
-| `/api/quality` | Code quality metrics, complexity scores, issue detection |
-| `/api/health` | Liveness, readiness, storage stats |
-| `/api/ai` | AI-powered summarisation, explanation, suggestions |
-| `/api/wiki` | Auto-generated documentation pages per entity |
-| `/api/memory` | Session memory, context retrieval |
-
-### MCP Server
-
-The API also exposes 15 tools via **FastMCP**, making the engine callable as an MCP tool provider. MCP clients (including Claude Code) can invoke search, indexing, graph queries, quality checks, and AI features through the standard MCP protocol.
-
----
-
-## Storage Layer
-
-Three complementary stores back the search and query capabilities:
-
-### KuzuDB -- Graph Database
-
-KuzuDB stores the code knowledge graph. All structural relationships live here.
-
-**Node schema (`Entity`):**
-
-| Property | Type | Description |
-|---|---|---|
-| `name` | string | Fully qualified entity name |
-| `entity_type` | string | `function`, `class`, `method`, `module`, `variable`, `interface`, `external` |
-| `file` | string | Source file path relative to project root |
-| `line_start` | int | First line of the entity definition |
-| `line_end` | int | Last line of the entity definition |
-| `complexity` | int | Cyclomatic complexity score |
-| `docstring` | string | Extracted documentation string |
-| `project` | string | Owning project identifier |
-
-**Edge types:**
-
-| Edge | Meaning |
-|---|---|
-| `CALLS` | Function/method invokes another function/method |
-| `IMPORTS` | Module imports another module or entity |
-| `EXTENDS` | Class inherits from another class |
-| `DEFINES` | Module defines a top-level entity |
-| `METHOD_OF` | Method belongs to a class |
-
-### LanceDB -- Vector Database
-
-LanceDB stores dense vector embeddings for semantic search. Each indexed entity is embedded using the **all-MiniLM-L6-v2** sentence transformer (384-dimensional vectors). Queries are embedded at search time and matched via approximate nearest-neighbour lookup.
-
-### BM25 Index -- Full-Text Keyword Search
-
-A BM25 inverted index provides traditional keyword search over entity names, docstrings, and file paths. This complements semantic search for exact-match and partial-match queries where lexical precision matters.
-
----
-
-## AST Parsing Pipeline
-
-Source code is parsed into structured entities using language-appropriate AST parsers:
-
-| Language | Parser |
-|---|---|
-| Python | `ast` (stdlib) |
-| JavaScript | tree-sitter |
-| TypeScript | tree-sitter |
-| TSX | tree-sitter |
-| Java | tree-sitter |
-| Go | tree-sitter |
-
-The parser extracts typed entities (`function`, `class`, `method`, `module`, `variable`, `interface`, `external`) along with their relationships, source locations, docstrings, and complexity metrics.
-
-**Incremental indexing** -- On re-index, the pipeline runs `git diff` against the last indexed commit to identify changed files. Only modified files are re-parsed and their graph/vector/BM25 entries updated, avoiding full re-index overhead.
-
----
-
-## AI Provider System
-
-The AI features (summarisation, wiki generation, code explanation) support multiple LLM providers:
-
-- **Claude** (Anthropic)
-- **OpenAI** (GPT models)
-- **Gemini** (Google)
-- **Ollama** (local models)
-
-Provider selection is configurable per-request or via project defaults. The abstraction layer normalises prompt formatting and response parsing across providers.
-
----
-
-## Indexing Pipeline Phases
-
-Indexing a project proceeds through four sequential phases:
-
-| Phase | Action | Output |
-|---|---|---|
-| **1. Parse** | AST extraction per file using language-specific parsers | Entity and relationship records |
-| **2. Graph** | Insert entities as nodes and relationships as edges into KuzuDB | Populated knowledge graph |
-| **3. BM25** | Build inverted index over entity names, docstrings, file paths | Keyword search index |
-| **4. Semantic** | Generate all-MiniLM-L6-v2 embeddings, insert into LanceDB | Vector search index |
-
-Each phase is independently retriable. Incremental indexing (via `git diff`) applies at phase 1, and the delta propagates through subsequent phases.
-
----
-
-## Data Flow
-
-```mermaid
-flowchart TB
-    subgraph Sources
-        SRC[Source Code<br/>Python / JS / TS / TSX / Java / Go]
-    end
-
-    subgraph Parse["Phase 1: Parse"]
-        AST_PY[Python ast]
-        AST_TS[tree-sitter<br/>JS / TS / TSX / Java / Go]
-        DIFF[git diff<br/>incremental detection]
-    end
-
-    subgraph Store["Phases 2-4: Index"]
-        KUZU[(KuzuDB<br/>Graph Database)]
-        LANCE[(LanceDB<br/>Vector Database)]
-        BM25[(BM25 Index<br/>Keyword Search)]
-    end
-
-    subgraph API["REST API :8420"]
-        FAST[FastAPI<br/>30+ endpoints]
-        MCP[FastMCP<br/>15 tools]
-    end
-
-    subgraph AI["AI Providers"]
-        CLAUDE[Claude]
-        OPENAI[OpenAI]
-        GEMINI[Gemini]
-        OLLAMA[Ollama]
-    end
-
-    subgraph UI["Frontend"]
-        REACT[React 18 + Vite]
-        SIGMA[Sigma.js 3.0<br/>WebGL Graph]
-        CM[CodeMirror 6<br/>Cypher Console]
-    end
-
-    SRC --> DIFF
-    DIFF --> AST_PY
-    DIFF --> AST_TS
-    AST_PY --> KUZU
-    AST_TS --> KUZU
-    AST_PY --> BM25
-    AST_TS --> BM25
-    AST_PY --> LANCE
-    AST_TS --> LANCE
-
-    FAST --> KUZU
-    FAST --> LANCE
-    FAST --> BM25
-    FAST --> AI
-    MCP --> FAST
-
-    REACT --> FAST
-    SIGMA --> REACT
-    CM --> REACT
+┌─────────────────────────────────────────────────────────────────────┐
+│                      INTELLIGENCE ENGINE                            │
+│                                                                     │
+│  ┌──────────────┐    ┌──────────────────┐    ┌──────────────────┐  │
+│  │ Domain       │    │ Extractors       │    │ Knowledge Graph  │  │
+│  │ Schema       │───>│                  │───>│                  │  │
+│  │              │    │ Tree-sitter      │    │ KuzuDB           │  │
+│  │ code.yaml    │    │  (8 languages)   │    │  Entity_code     │  │
+│  │ archaeology  │    │                  │    │  Entity_archae.. │  │
+│  │ your-domain  │    │ Custom YAML/JSON │    │  Rel_code_*      │  │
+│  │              │    │  extractors      │    │  Rel_archae.._*  │  │
+│  └──────────────┘    └──────────────────┘    └────────┬─────────┘  │
+│                                                       │             │
+│  ┌──────────────┐    ┌──────────────────┐             │             │
+│  │ Embedding    │    │ Search Engine    │<────────────┘             │
+│  │ Pipeline     │───>│                  │                           │
+│  │              │    │ BM25 (0.35)      │    ┌──────────────────┐  │
+│  │ MiniLM-L6   │    │ Semantic (0.40)  │───>│ API Layer        │  │
+│  │ LanceDB     │    │ Graph (0.25)     │    │                  │  │
+│  │ 384-dim      │    │                  │    │ MCP: 15 tools    │  │
+│  └──────────────┘    │ 3-way RRF       │    │ REST: 33 endpts  │  │
+│                      └──────────────────┘    │ Web: React/Sigma │  │
+│  ┌──────────────┐                            │                  │  │
+│  │ Change       │    ┌──────────────────┐    │ AI: 4 LLM       │  │
+│  │ Detector     │    │ Quality Engine   │    │   providers      │  │
+│  │ git diff +   │    │ Complexity, docs │    └──────────────────┘  │
+│  │ hash fallback│    │ coupling, scores │                           │
+│  └──────────────┘    └──────────────────┘                           │
+│                                                                     │
+│  Graph: KuzuDB (default) + NetworkX (fallback)                     │
+│  Vectors: LanceDB (all-MiniLM-L6-v2, 384-dim)                     │
+│  Incremental: git diff primary, SHA-256 hash fallback              │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Port Summary
+## Domain Schema System
 
-| Service | Port | Protocol |
-|---|---|---|
-| Vite dev server | 5173 | HTTP |
-| FastAPI backend | 8420 | HTTP |
-| FastMCP (MCP tools) | via FastAPI | stdio / SSE |
+Each domain is defined by a YAML file in `config/domains/`. A schema specifies:
+
+```yaml
+domain: archaeology
+version: 1
+display_name: "Archaeology"
+
+identity_rules:
+  uniqueness: per_project
+  id_pattern: "{project}::{source_ref}::{name}"
+
+entity_types:
+  - name: find
+    label: Find
+    color: "#D4A574"
+    category: artifact
+  - name: site
+    label: Site
+    color: "#4A90D9"
+    category: location
+  # ...
+
+relationship_types:
+  - name: FOUND_AT
+    source_types: [find]
+    target_types: [site]
+    cardinality: many_to_one
+    edge_properties:
+      context: string
+      depth: double
+  # ...
+
+entity_properties:
+  - name: find_category
+    type: string
+    required: false
+    description: "Category of find (axe, jewelry, pottery, etc.)"
+  # ...
+
+search_profiles:
+  default:
+    bm25_fields: [name, entity_type, description, region]
+    bm25_weights:
+      name: 3
+      description: 2
+    embedding_fields: [name, entity_type, description]
+
+display:
+  default_label_field: name
+  detail_fields: [name, entity_type, find_category, region, ...]
+  snippet_field: description
+
+health_checks:
+  callable_types: []
+  dependency_edge: null
+  skip_types: [external]
+
+extractors:
+  type: custom                                          # or "tree-sitter"
+  module: intelligence_engine.extractors.archaeology_extractor
+
+embedding:
+  model: "all-MiniLM-L6-v2"
+```
+
+When the engine encounters a domain, it:
+
+1. Loads the schema YAML
+2. Creates `Entity_<domain>` and `Rel_<domain>_<type>` tables in KuzuDB
+3. Routes indexing to the correct extractor (Tree-sitter or custom)
+4. Configures search profiles for the domain's fields
+5. Sets up display and health check rules
+
+---
+
+## Component Responsibilities
+
+| Component | Responsibility |
+|-----------|----------------|
+| `src/parser/` | Tree-sitter AST parsing, 8-language entity extraction |
+| `src/extractors/` | Custom domain extractors (archaeology, etc.) |
+| `src/domain/` | Domain schema loading, validation, registry |
+| `src/graph/` | Knowledge graph (KuzuDB + NetworkX dual-backend), Cypher queries |
+| `src/search/` | BM25, semantic (LanceDB), graph search, 3-way RRF fusion |
+| `src/llm/` | LLM provider abstraction (Claude/OpenAI/Gemini/Ollama), entity summarizer |
+| `src/mcp/` | MCP server with 15 tools |
+| `src/web/` | FastAPI backend (33 endpoints) + React/Sigma.js frontend |
+| `src/registry.py` | Multi-project registry, cross-project search |
+| `src/change_detector.py` | Incremental indexing: git diff + SHA-256 hash fallback |
+| `src/indexer.py` | Shared pipeline (CLI/MCP/Web), mode=auto/full/incremental |
+| `src/quality.py` | Code quality metrics (complexity, doc coverage, coupling) |
+| `src/storage.py` | Storage mode detection (per-project / shared), path resolution |
+| `src/migrate.py` | Migration tool: per-project <-> shared, verification |
+| `src/ai_overlay.py` | AI data preservation across re-indexing |
+| `src/memory_aggregator.py` | Unified memory records from graph + external sources |
+
+---
+
+## Storage Architecture
+
+### Per-Project Mode (default)
+
+Each project gets isolated databases:
+
+```
+data/
+  myproject/
+    parse.json          # Extracted entities and relationships
+    kuzu_db/            # KuzuDB graph database
+    lancedb/            # LanceDB vector store
+    index_history.json  # Performance tracking
+```
+
+### Shared Mode (multi-tenant)
+
+All projects share a single database with `project` column filtering:
+
+```
+data/
+  _shared/
+    kuzu_db/            # All projects in one graph
+    lancedb/            # All embeddings in one vector store
+  myproject/
+    parse.json          # Still per-project (source data)
+    index_history.json
+```
+
+Shared mode enables:
+- Cross-project Cypher queries (find dependencies across projects)
+- Single-query semantic search across all projects
+- Global graph analysis (community detection across the full graph)
+
+Switch between modes using `python -m intelligence_engine migrate`.
+
+### Domain-Scoped Tables
+
+KuzuDB tables are scoped by domain to prevent schema conflicts:
+
+```
+Entity_code             # 15 entity types, code-specific properties
+Rel_code_CALLS          # Code relationship tables
+Rel_code_IMPORTS
+Rel_code_EXTENDS
+...
+
+Entity_archaeology      # 6 entity types, archaeology-specific properties
+Rel_archaeology_FOUND_AT
+Rel_archaeology_DATED_TO
+...
+```
+
+This allows multiple domains to coexist in the same database without column or type collisions.
+
+---
+
+## Routing Key: (project, domain)
+
+All operations in the engine are routed by the tuple `(project, domain)`:
+
+- **Indexing:** Selects the correct extractor and target tables
+- **Search:** Scopes results and applies domain-specific search profiles
+- **API:** Every endpoint accepts `project` and `domain` parameters
+- **MCP:** Tools route through the same key
+- **Web UI:** Domain selector in the project dropdown
+
+This design means a single project can contain entities from multiple domains (e.g., a project with both code and documentation entities).
+
+---
+
+## Adding a New Domain
+
+1. **Define the schema** -- Create `config/domains/your-domain.yaml` with entity types, relationships, properties, search profiles, and display config
+2. **Write an extractor** -- Either use `tree-sitter` (for code-like domains) or create a custom extractor module that reads your data format and returns entity/relationship dicts
+3. **Index** -- Run the indexer with `--domain your-domain` and the engine creates all necessary tables
+4. **Use** -- Search, query, visualize, and analyze through the same interfaces as any other domain
+
+No core engine code needs to change. The schema YAML drives everything.

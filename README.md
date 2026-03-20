@@ -1,393 +1,122 @@
 # Intelligence Engine
 
-> AST-driven code knowledge graphs with hybrid search -- Kuzu graph + LanceDB vectors + BM25 full-text across 54 indexed projects.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)
+![Version](https://img.shields.io/badge/version-0.21.0-green.svg)
 
-[![Version](https://img.shields.io/badge/version-0.19.1-blue)](https://github.com/fbratten/intelligence-engine)
-[![Status](https://img.shields.io/badge/status-production--ready-green)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-958%20passing-brightgreen)]()
-[![Live Site](https://img.shields.io/badge/site-live-blue)](https://fbratten.github.io/intelligence-engine-showcase/)
+> Domain-agnostic intelligence engine with schema-driven knowledge graphs.
 
----
+Build knowledge graphs from any structured domain using YAML schema definitions, then search, explore, and analyze them through hybrid search, a web UI, or an MCP server for AI assistants.
 
-## What It Does
-
-- **Parses source code into knowledge graphs** -- functions, classes, methods, modules, and interfaces become queryable graph entities with full relationship mapping
-- **Hybrid search across three strategies** -- BM25 keyword matching, semantic vector search via LanceDB, and graph context expansion work together to find exactly what you need
-- **Interactive graph visualization** -- Sigma.js force-directed layouts let you explore code relationships visually, with filtering, zoom, and entity detail panels
-- **AI-powered analysis** -- Entity summarization, natural language Q&A, batch analysis, and wiki generation powered by Claude, OpenAI, Gemini, or Ollama
-
----
-
-## Key Capabilities
-
-| Capability | Description |
-|------------|-------------|
-| **AST Parsing** | 6 languages supported: Python, JavaScript, TypeScript, TSX, Java, Go |
-| **Knowledge Graph** | KuzuDB-backed graph with full Cypher query support |
-| **Hybrid Search** | Triple-strategy: BM25 keyword + semantic vector + graph context expansion |
-| **Cross-Project Search** | Shared KuzuDB mode indexes 54 projects in a single queryable graph |
-| **Code Quality Metrics** | Cyclomatic complexity, documentation coverage, coupling analysis, fan-in/fan-out |
-| **Health Analysis** | Dead code detection, circular dependency finder, hub identification |
-| **Change Impact** | Blast radius calculation -- see every downstream caller affected by a change |
-| **AI Summarization** | Multi-provider support: Claude, OpenAI, Gemini, Ollama |
-| **Wiki Generation** | Auto-generate documentation from graph structure |
-| **Memory System** | Unified KuzuDB graph + Minna memories for persistent knowledge |
-| **33 Cypher Templates** | Pre-built queries for common analysis patterns |
-| **Incremental Indexing** | Git diff-based updates -- only re-index what changed |
-
----
-
-## MCP Tools
-
-Intelligence Engine exposes 15 tools via the Model Context Protocol:
-
-| Tool | Description |
-|------|-------------|
-| `ie_index` | Index a project -- parse source code into the knowledge graph |
-| `ie_status` | Check indexing status for a project |
-| `ie_search_all` | Cross-project hybrid search across all indexed projects |
-| `ie_query` | Search within a single project using hybrid strategies |
-| `ie_context` | Get full context for an entity -- callers, callees, blast radius |
-| `ie_cypher` | Run arbitrary Cypher queries against the knowledge graph |
-| `ie_quality` | Run code quality analysis -- complexity, docs, coupling metrics |
-| `ie_health` | Health check -- dead code, cycles, hubs, concentration |
-| `ie_detect_changes` | Detect changes since last index and calculate impact |
-| `ie_summarize` | AI-powered entity summarization |
-| `ie_batch_summarize` | Batch summarize multiple entities |
-| `ie_global_analysis` | Cross-project analysis and pattern detection |
-| `ie_wiki` | Generate wiki documentation from graph |
-| `ie_memory` | Store and retrieve persistent memories |
-| `ie_context` | Get recent context and session state |
-
----
-
-## Web UI
-
-The React 18 + TypeScript frontend provides 13 interactive components:
-
-| Component | Purpose |
-|-----------|---------|
-| **Project Picker** | Select from 54 indexed projects |
-| **Search Bar** | Hybrid search with strategy selection (BM25, semantic, graph) |
-| **Graph Canvas** | Sigma.js 3.0 force-directed visualization of code relationships |
-| **Filter Panel** | Filter by entity type, language, complexity, connectivity |
-| **Entity Detail** | Full entity view with metadata, source code, and relationships |
-| **History Panel** | Navigation history and bookmarks |
-| **Source Panel** | Syntax-highlighted source code with CodeMirror 6 |
-| **Dashboard** | 6 tabs: Overview, Quality, Health, Dependencies, AI Insights, Memory |
-| **Cypher Console** | CodeMirror 6 editor with 33 pre-built query templates |
-| **Settings** | Configuration for AI providers, display, and search behavior |
-| **Batch Summarize** | Queue and run AI summarization across multiple entities |
-| **Color Legend** | Visual key for entity types and relationship categories |
-| **Status Bar** | Live indexing progress, connection status, search metrics |
+**Key Stats:** 1261+ tests | 15 MCP tools | 33 REST endpoints | 8 languages | 2 domains
 
 ---
 
 ## Architecture
 
-<div style="background: #0d1117; border-radius: 12px; padding: 24px; font-family: monospace; color: #c9d1d9; max-width: 800px;">
+```
+Domain Schema     Extractors         Knowledge Graph     Hybrid Search       MCP / Web UI
+  (YAML)            |                    |                    |                  |
+  code.yaml    +--> Tree-sitter  --+--> KuzuDB          +--> BM25 (0.35)  +--> 15 MCP tools
+  archaeology  |    (8 languages)  |    Entity_code      |    Semantic      |    (FastMCP)
+  your-domain  |                   |    Entity_archae..  |    (0.40)        |
+  ...          +--> Custom YAML  --+    Rel_code_*       |    Graph (0.25)  +--> 33 REST
+               |    extractors     |    Rel_archae.._*   |                  |    endpoints
+               |                   |                     |    3-way RRF     |    (FastAPI)
+               +-------------------+    NetworkX         |    fusion        |
+                                        (fallback)       +------------------+--> React 18
+                                                                            |    Sigma.js
+                                        LanceDB                            |    graph explorer
+                                        (384-dim vectors)                  +----
+```
 
-  <!-- Frontend Layer -->
-  <div style="background: #1a1e2e; border: 2px solid #58a6ff; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-    <div style="color: #58a6ff; font-weight: bold; font-size: 14px; margin-bottom: 8px;">Frontend -- React 18 + TypeScript</div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #79c0ff; font-size: 12px;">Sigma.js 3.0 Graph</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #79c0ff; font-size: 12px;">CodeMirror 6 Cypher</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #79c0ff; font-size: 12px;">Search Bar</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #79c0ff; font-size: 12px;">Dashboard (6 tabs)</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #79c0ff; font-size: 12px;">Entity Detail</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #79c0ff; font-size: 12px;">Filter Panel</span>
-    </div>
-  </div>
-
-  <!-- Arrow -->
-  <div style="text-align: center; color: #8b949e; font-size: 18px; margin: 4px 0;">&#8595;&#8593; REST API (30+ endpoints)</div>
-
-  <!-- API Layer -->
-  <div style="background: #1a2e1a; border: 2px solid #3fb950; border-radius: 8px; padding: 16px; margin: 16px 0;">
-    <div style="color: #3fb950; font-weight: bold; font-size: 14px; margin-bottom: 8px;">REST API -- FastAPI (port 8420)</div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #7ee787; font-size: 12px;">Search Endpoints</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #7ee787; font-size: 12px;">Graph Queries</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #7ee787; font-size: 12px;">Analysis APIs</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #7ee787; font-size: 12px;">MCP Server (15 tools)</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #7ee787; font-size: 12px;">AI Providers</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #7ee787; font-size: 12px;">Wiki Generator</span>
-    </div>
-  </div>
-
-  <!-- Arrow -->
-  <div style="text-align: center; color: #8b949e; font-size: 18px; margin: 4px 0;">&#8595;&#8593;</div>
-
-  <!-- Backend Layer -->
-  <div style="background: #2e1a2e; border: 2px solid #bc8cff; border-radius: 8px; padding: 16px;">
-    <div style="color: #bc8cff; font-weight: bold; font-size: 14px; margin-bottom: 8px;">Backend -- Storage + Analysis</div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #d2a8ff; font-size: 12px;">KuzuDB Graph</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #d2a8ff; font-size: 12px;">LanceDB Vectors</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #d2a8ff; font-size: 12px;">BM25 Full-Text</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #d2a8ff; font-size: 12px;">AST Parsers (6 langs)</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #d2a8ff; font-size: 12px;">Complexity Analyzer</span>
-      <span style="background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 4px 10px; color: #d2a8ff; font-size: 12px;">Git Diff Engine</span>
-    </div>
-  </div>
-
-</div>
+Each domain is defined by a single YAML file that specifies entity types, relationship types, entity properties, search profiles, display configuration, and health checks. The engine creates domain-scoped database tables (`Entity_<domain>`, `Rel_<domain>_*`) and routes all operations through the `(project, domain)` key.
 
 ---
 
-## Real-World Use Cases
+## Feature Highlights
 
-### Multi-Agent Dev Cycle
-
-Multiple AI agents use Intelligence Engine as their shared knowledge backbone during a development sprint. Agent A indexes new code after each commit. Agent B searches for related implementations before writing new features. Agent C runs health checks to catch dead code and circular dependencies. Agent D queries blast radius before refactoring shared utilities. The knowledge graph becomes the single source of truth that keeps all agents aligned without direct coordination.
-
-### Test Coverage Gap Discovery
-
-After adding code to a project, run `ie_cypher` to find functions without test coverage. Query for functions with high cyclomatic complexity but no test file callers. Intelligence Engine becomes a capability "enlightener" -- surfacing blind spots that traditional coverage tools miss because it understands the *structural* relationship between production code and test code through the graph.
-
-### Post-Merge Impact Analysis
-
-After a large PR merge, use `ie_detect_changes` to calculate blast radius. Which 47 downstream callers are affected? Which tests need to run? Intelligence Engine answers in milliseconds what would take a human hours of manual code tracing. The graph knows every call chain, every import, every inheritance relationship.
-
-### Cross-Project Dependency Audit
-
-Using `ie_search_all` in shared mode, find every project that imports a specific utility. When updating a shared library, know exactly who depends on it across all 54 indexed projects. No more grep across dozens of repos -- the knowledge graph already has the complete dependency picture.
+- **Domain Generalization** -- Define any knowledge domain via a YAML schema. The engine handles table creation, indexing, search, and visualization automatically.
+- **Archaeology MVP** -- First non-code domain: finds, sites, periods, materials, water bodies. Validates the entire domain-agnostic architecture.
+- **Hybrid Search** -- 3-way Reciprocal Rank Fusion combining BM25 keyword search, semantic vector search (all-MiniLM-L6-v2), and graph context expansion.
+- **Graph Visualization** -- React 18 + Sigma.js 3 force-directed graph explorer with filtering, clustering, and interactive entity detail.
+- **AI Integration** -- LLM-powered entity summaries and Q&A (Claude, OpenAI, Gemini, Ollama). Persistent AI data survives re-indexing.
+- **MCP Server** -- 15 tools exposing the full engine to AI coding assistants via the Model Context Protocol.
+- **Multi-Project** -- Index and search across 100+ projects. Shared database mode enables cross-project Cypher queries and global analysis.
 
 ---
 
-## Example Outputs
+## Domains
 
-### Code Quality Analysis (`ie_quality`)
+### Code Intelligence (built-in)
 
-```
-Project: agent-comm
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Parses 8 languages via Tree-sitter:
 
-Composite Score:  69.1 / 100
+| Language | Entity Types |
+|----------|-------------|
+| Python | function, class, method, module, variable |
+| JavaScript | function, class, method, module, variable |
+| TypeScript/TSX | function, class, method, module, variable, interface |
+| Java | function, class, method, module, interface |
+| Go | function, class, method, module, interface |
+| HTML | component, template, form, section |
+| CSS | selector, css_variable, keyframe, media_query |
 
-Complexity
-  Min:     1
-  Max:     43
-  Average: 1.6
-  Median:  1
+Relationships: `CALLS`, `IMPORTS`, `EXTENDS`, `DEFINES`, `METHOD_OF`, `LINKS_STYLESHEET`, `REFERENCES_SCRIPT`, `USES_VARIABLE`
 
-Documentation Coverage
-  39.6% (181 / 457 entities documented)
+### Archaeology (first non-code domain)
 
-Function Length
-  Min:     2 lines
-  Max:     328 lines
-  Average: 12.1 lines
+Custom YAML/JSON extractor for archaeological data:
 
-Top Complex Functions
-  main()  CC = 43
-```
+| Entity Type | Category | Example |
+|-------------|----------|---------|
+| find | artifact | Bronze axe, pottery shard |
+| site | location | Burial mound, settlement |
+| period | temporal | Bronze Age, Iron Age |
+| material | classification | Bronze, flint, ceramic |
+| water_body | geography | Lake, river |
 
-### Health Analysis (`ie_health`)
+Relationships: `FOUND_AT`, `DATED_TO`, `MADE_OF`, `NEAR_WATER`, `ASSOCIATED_WITH`
 
-```
-Project: agent-comm
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### Adding a New Domain
 
-Dead Code:              239 entities
-Circular Dependencies:  0
-Hub Count:              5
-Hub Concentration:      0.724
-Max Fan-Out:            main() → 44 connections
-```
+1. Create `config/domains/your-domain.yaml` defining entity types, relationships, properties, and search profiles
+2. Write an extractor (or use Tree-sitter for code-like domains)
+3. Index your data -- the engine creates the necessary database tables automatically
 
-### Entity Context (`ie_context`)
-
-```
-Entity: MessageSpool
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Direct Callers:  3
-Blast Radius:    6 entities across 2 depth levels
-
-Used By:
-  ├── SQLiteTransport
-  ├── relay_server
-  └── test_spool
-```
-
-### Cypher Query -- Inheritance Hierarchies (`ie_cypher`)
-
-```cypher
-MATCH (child)-[:INHERITS]->(parent)
-RETURN parent.name, child.name
-```
-
-```
-LLM Providers:
-  ├── ClaudeProvider    → LLMProvider
-  ├── OpenAIProvider    → LLMProvider
-  ├── GeminiProvider    → LLMProvider
-  └── OllamaProvider   → LLMProvider
-
-Transports:
-  ├── FileTransport     → Transport
-  ├── HTTPTransport     → Transport
-  └── SQLiteTransport   → Transport
-
-Bridges:
-  ├── OpenClawBridge       → Bridge
-  └── OpenClawDirectBridge → Bridge
-```
+See [docs/architecture.md](docs/architecture.md) for the full domain schema specification.
 
 ---
 
-## Screenshots
+## Status
 
-### Graph Visualization
+**All phases complete + Domain Generalization.** v0.21.0, 1261+ tests passing.
 
-The main view -- a force-directed graph of all code entities in a project. Each node is a function, class, method, module, or variable. Edges show CALLS, IMPORTS, EXTENDS, DEFINES, and METHOD_OF relationships.
-
-![Graph Visualization - Agent Comm](screenshots/04-agent-comm-graph-clean.png)
-*Agent Comm project: 490 nodes, 1182 edges. Color-coded by entity type.*
-
-### Community Detection
-
-Switch to Community coloring to reveal tightly-connected clusters. The modularity score measures how well the code separates into distinct modules.
-
-![Community Detection](screenshots/05-community-coloring.png)
-*14 communities detected with 0.741 modularity. Clusters map to architectural boundaries.*
-
-### Entity Detail Panel
-
-Click any node to see its full context -- file location, docstring, AI analysis buttons, caller/callee lists, source code, and Q&A history.
-
-![Entity Detail](screenshots/21-search-click-result.png)
-*Coordinator class: file path, docstring, Ask AI buttons (Explain, Find bugs, Suggest improvements, Document, Security concerns).*
-
-### Source Code Viewer
-
-Expand the Source Code section to see syntax-highlighted code with line numbers, directly from the indexed source files.
-
-![Source Code](screenshots/08-source-code-expanded.png)
-*Inline source viewer with syntax highlighting -- no need to switch to an IDE.*
-
-### Depth-Filtered Subgraph
-
-Select a node and set depth=1 to see only its immediate connections. Depth 2, 3, or 5 expand the neighborhood progressively.
-
-![Depth Filter](screenshots/22-depth-1-coordinator.png)
-*Coordinator class at depth=1 -- showing direct callers, methods, and imports.*
-
-### Hybrid Search
-
-Search across entities using three combined strategies -- BM25 keyword matching, semantic vector similarity, and graph context expansion.
-
-![Hybrid Search](screenshots/18-search-results.png)
-*Search for "Coordinator" returns ranked results with search strategy tags and relevance scores.*
-
-### Dashboard -- Timeline & Phases
-
-Track indexing history and see the breakdown of each indexing run by phase (parse, graph, BM25, semantic).
-
-![Dashboard Timeline](screenshots/09-dashboard.png)
-*Timeline tab: 1 run, 50.5s average, 33 files, 490 entities.*
-
-![Dashboard Phases](screenshots/10-dashboard-phases.png)
-*Phase breakdown showing time spent in each indexing stage.*
-
-### Dashboard -- Health
-
-At-a-glance structural health metrics: dead code count, circular dependencies, and hub concentration.
-
-![Dashboard Health](screenshots/11-dashboard-health.png)
-*239 dead code entities, 0 cycles, 12.0% hub concentration.*
-
-### Dashboard -- Quality
-
-Composite quality score with complexity distribution, most complex functions, and documentation coverage progress.
-
-![Dashboard Quality](screenshots/14-dashboard-quality-loaded.png)
-*Score 69.1/100. Complexity distribution bar chart. main() at CC 43. 39.6% doc coverage.*
-
-### Dashboard -- Cross-Project Compare
-
-Side-by-side comparison of all indexed projects -- files, entities, indexing time, and dead code counts.
-
-![Dashboard Compare](screenshots/12-dashboard-compare.png)
-*Compare tab spanning all 54 indexed projects.*
-
-### Dashboard -- AI Memory Browser
-
-Unified memory browser showing KuzuDB graph knowledge and Minna persistent memories, with search and export.
-
-![AI Memory](screenshots/15-dashboard-ai-memory.png)
-*AI Memory tab with All/KuzuDB/Minna source filters, search, and JSON/CSV export.*
-
-### Cypher Console
-
-Built-in Cypher query editor with pre-built templates and tabular results. Run arbitrary graph queries against the knowledge graph.
-
-![Cypher Console](screenshots/17-cypher-results.png)
-*Query: MATCH functions -- 50 rows in 6.3ms. Templates dropdown for common queries.*
-
-### Node Type Filtering
-
-Toggle entity types on/off to focus the graph on specific code structures.
-
-![Node Filtering](screenshots/24-filter-no-functions.png)
-*Functions hidden -- only classes, methods, modules, and variables visible.*
-
-### Search Mode Selection
-
-Choose between Hybrid (all three), BM25-only, or Semantic-only search strategies.
-
-![Search Modes](screenshots/26-search-modes.png)
-*Dropdown: Hybrid, BM25, Semantic.*
-
-### LLM Provider Settings
-
-Configure multiple AI providers for entity summarization and Q&A -- Claude, OpenAI, and Gemini.
-
-![Settings](screenshots/25-settings.png)
-*Multi-provider configuration with API key management.*
-
-### Project Selection
-
-Browse and select from all indexed projects via the dropdown.
-
-![Project Dropdown](screenshots/02-project-dropdown.png)
-*54 indexed projects available for exploration.*
-
-### Large Project Visualization
-
-Content MCP at 1092 nodes and 2049 edges -- the graph handles large codebases smoothly.
-
-![Large Project](screenshots/23-content-mcp-graph.png)
-*Content MCP: 1092 nodes, 2049 edges. Dense but navigable.*
-
----
-
-## Interactive Demos
-
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0;">
-
-  <a href="https://fbratten.github.io/intelligence-engine-showcase/demos/tool-selector/" style="text-decoration: none; display: block; background: #12122a; border: 2px solid #1a1a3e; border-radius: 4px; padding: 20px; transition: all 0.2s; text-align: center;">
-    <div style="font-family: 'Press Start 2P', monospace; color: #00ffff; font-size: 11px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0,255,255,0.5);">TOOL SELECTOR</div>
-    <div style="font-size: 32px; margin-bottom: 10px;">&#x1F578;</div>
-    <div style="font-family: 'Share Tech Mono', monospace; color: #6a6a9a; font-size: 12px;">Find the right IE tool for your task</div>
-  </a>
-
-  <a href="https://fbratten.github.io/intelligence-engine-showcase/demos/search-strategy-picker/" style="text-decoration: none; display: block; background: #12122a; border: 2px solid #1a1a3e; border-radius: 4px; padding: 20px; transition: all 0.2s; text-align: center;">
-    <div style="font-family: 'Press Start 2P', monospace; color: #ff00ff; font-size: 11px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,0,255,0.5);">SEARCH PICKER</div>
-    <div style="font-size: 32px; margin-bottom: 10px;">&#x1F50D;</div>
-    <div style="font-family: 'Share Tech Mono', monospace; color: #6a6a9a; font-size: 12px;">Compare BM25, Semantic & Hybrid strategies</div>
-  </a>
-
-  <a href="https://fbratten.github.io/intelligence-engine-showcase/demos/search-picker/" style="text-decoration: none; display: block; background: #12122a; border: 2px solid #1a1a3e; border-radius: 4px; padding: 20px; transition: all 0.2s; text-align: center;">
-    <div style="font-family: 'Press Start 2P', monospace; color: #39ff14; font-size: 11px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(57,255,20,0.5);">QUERY GUIDE</div>
-    <div style="font-size: 32px; margin-bottom: 10px;">&#x1F916;</div>
-    <div style="font-family: 'Share Tech Mono', monospace; color: #6a6a9a; font-size: 12px;">Interactive decision tree for search queries</div>
-  </a>
-
-</div>
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1 | AST Parsing (Tree-sitter) | Complete |
+| 2 | Knowledge Graph (NetworkX + KuzuDB) | Complete |
+| 3 | Hybrid Search (BM25 + Graph RRF) | Complete |
+| 4 | MCP Server (15 tools via FastMCP) | Complete |
+| 5 | Multi-Project (registry, cross-project search) | Complete |
+| 6 | Semantic Embeddings (sentence-transformers + LanceDB) | Complete |
+| 6.5 | KuzuDB Migration (dual-backend, Cypher queries) | Complete |
+| 7 | Visual UI (React + Sigma.js graph explorer) | Complete |
+| 8 | Multi-Language Support (Python, JS, TS/TSX, Java, Go, HTML, CSS) | Complete |
+| 9 | Incremental Indexing (git diff + hash fallback) | Complete |
+| 10 | Performance Dashboard (timeline, phases, health, compare) | Complete |
+| 11 | AI-Powered Summaries (Claude, OpenAI, Gemini, Ollama) | Complete |
+| 12 | Graph Clustering (Louvain community detection) | Complete |
+| -- | Batch Summaries, Code Quality Metrics, UI Polish | Complete |
+| -- | AI Q&A (free-form questions, template prompts, history) | Complete |
+| -- | Shared DB Architecture (multi-tenant, migration tool) | Complete |
+| -- | Cross-Project Search + Global Graph Analysis | Complete |
+| -- | AI Overlay Preservation (data survives re-index) | Complete |
+| -- | Read-Only Serving + Input Sanitization | Complete |
+| -- | AI Memory Tab (unified memory browser, export) | Complete |
+| -- | HTML & CSS Language Support (8 new entity types) | Complete |
+| -- | **Domain Generalization** (schema-driven, YAML config) | Complete |
+| -- | **Archaeology MVP** (first non-code domain) | Complete |
 
 ---
 
@@ -395,32 +124,116 @@ Content MCP at 1092 nodes and 2049 edges -- the graph handles large codebases sm
 
 ```bash
 # Clone and set up
-cd ~/projects/intelligence-engine
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+git clone <repo-url> intelligence-engine
+cd intelligence-engine
+python3 -m venv .venv
+source .venv/bin/activate
+uv pip install -e ".[dev]"
 
-# Start the API server (port 8420)
-python -m intelligence_engine.api
+# Index a project (code domain, auto-detected)
+python -m intelligence_engine index /path/to/your/project
 
-# Index your first project
-curl -X POST http://localhost:8420/api/index \
-  -H "Content-Type: application/json" \
-  -d '{"project_path": "/path/to/your/project"}'
+# Search
+python -m intelligence_engine search data/myproject/parse.json "find authentication"
 
-# Start the frontend
-cd src/intelligence_engine/web/frontend
-npm install
-npm run dev
+# Start the web UI
+python -m intelligence_engine serve --port 8420 &
+cd src/intelligence_engine/web/frontend && npm install && npm run dev
+
+# Open the URL shown by Vite in your browser
+```
+
+### Storage Modes
+
+```bash
+# Per-project (default): each project gets its own databases
+python -m intelligence_engine index /path/to/project
+
+# Shared mode: all projects in a single database (enables cross-project queries)
+# Set storage.mode: shared in config/config.yaml, then:
+python -m intelligence_engine migrate --to-shared
+python -m intelligence_engine migrate --verify-only
 ```
 
 ---
 
-## Links
+## Web UI
 
-- **GitHub:** [fbratten/intelligence-engine](https://github.com/fbratten/intelligence-engine)
-- **Live Showcase:** [fbratten.github.io/intelligence-engine-showcase](https://fbratten.github.io/intelligence-engine-showcase/)
-- **License:** MIT
+React 18 + Sigma.js 3 graph explorer with 6 dashboard tabs:
+
+- **Interactive graph** -- Force-directed visualization (ForceAtlas2) with node/edge type filtering
+- **Hybrid search** -- BM25, semantic, graph, or combined search with dropdown mode picker
+- **Entity detail** -- Source code preview, complexity badges, AI summaries, Q&A history
+- **Cypher console** -- Direct KuzuDB queries with sticky headers and monospace output
+- **Performance dashboard** -- Index timeline, per-phase timing, health snapshots, project comparison, quality metrics
+- **AI Memory browser** -- Unified view of all AI-generated data with filters, search, and CSV/JSON export
+- **Graph clustering** -- Louvain community detection, color by type or cluster
+- **Code quality** -- Composite scores, complexity histograms, coupling analysis
+- **AI Q&A** -- Free-form questions about any entity, with template prompts and persistent history
+- **LLM settings** -- Multi-provider credential management (Claude, OpenAI, Gemini, Ollama)
+- **Batch operations** -- Project indexing, batch summarization with progress tracking
 
 ---
 
-<sub>Intelligence Engine v0.19.1 -- 958 tests passing, 54 projects indexed, 6 languages supported.</sub>
+## MCP Server
+
+15 tools for AI assistants via the Model Context Protocol:
+
+| Tool | Purpose |
+|------|---------|
+| `ie_index` | Index a project into the knowledge graph |
+| `ie_query` | Search within a single project |
+| `ie_search_all` | Cross-project semantic search |
+| `ie_context` | Entity context (callers, callees, blast radius) |
+| `ie_detect_changes` | Pre-change risk assessment via git diff |
+| `ie_cypher` | Read-only Cypher queries on KuzuDB |
+| `ie_wiki` | Generate documentation from the graph |
+| `ie_status` | List all indexed projects |
+| `ie_health` | Structural health (dead code, cycles, hubs) |
+| `ie_quality` | Code quality metrics (complexity, docs, coupling) |
+| `ie_summarize` | AI-powered entity summary (single) |
+| `ie_batch_summarize` | AI-powered summaries (project-wide) |
+| `ie_global_analysis` | Cross-project clustering + health (shared mode) |
+| `ie_memory` | Unified AI memory browser |
+
+The server includes self-describing resources (`ie://schema`, `ie://cypher-templates`, `ie://guide`) and pre-built prompt workflows (code review, capability audit, change risk assessment).
+
+---
+
+## Technology Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Language** | Python 3.12 (backend), TypeScript (frontend) |
+| **AST Parser** | Tree-sitter (8 language grammars) |
+| **Graph DB** | KuzuDB (default) + NetworkX (fallback) |
+| **Vector Store** | LanceDB (all-MiniLM-L6-v2, 384-dim) |
+| **Keyword Search** | BM25 (rank_bm25) |
+| **MCP Server** | FastMCP |
+| **Web Backend** | FastAPI (33 REST endpoints) |
+| **Web Frontend** | React 18 + Sigma.js 3 + Vite 6 + Tailwind CSS v4 |
+| **AI Providers** | Claude, OpenAI, Gemini, Ollama |
+| **Build** | Hatchling (Python), Vite (frontend) |
+| **Package Mgmt** | uv (Python), npm (frontend) |
+| **Testing** | pytest (1261+ tests) |
+
+---
+
+## Documentation
+
+- **[Architecture Deep-Dive](docs/architecture.md)** -- Domain schema system, pipeline, storage modes
+- **[Technical Overview](docs/technical-overview.md)** -- Parser, graph, search, AI, MCP, REST details
+- **[Architectural Decisions](docs/decisions.md)** -- Key design choices and rationale
+- **[Project Context](docs/project-context.md)** -- What it does, why it exists, status
+
+---
+
+## Interactive Demos
+
+- **[Which Search Strategy?](demos/search-picker/)** -- Choose the right search approach for your query
+
+---
+
+## License
+
+[MIT](LICENSE)
