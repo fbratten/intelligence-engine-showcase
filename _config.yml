@@ -1,5 +1,5 @@
 title: Intelligence Engine Showcase
-description: AST-driven code knowledge graphs with hybrid search
+description: Domain-agnostic intelligence engine with schema-driven knowledge graphs
 baseurl: "/intelligence-engine-showcase"
 url: "https://fbratten.github.io"
 remote_theme: just-the-docs/just-the-docs

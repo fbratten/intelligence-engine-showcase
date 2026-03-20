@@ -84,7 +84,7 @@ Relationships: `FOUND_AT`, `DATED_TO`, `MADE_OF`, `NEAR_WATER`, `ASSOCIATED_WITH
 2. Write an extractor (or use Tree-sitter for code-like domains)
 3. Index your data -- the engine creates the necessary database tables automatically
 
-See [docs/architecture.md](docs/architecture.md) for the full domain schema specification.
+See [docs/architecture.md](docs/architecture) for the full domain schema specification.
 
 ---
 
@@ -221,10 +221,10 @@ The server includes self-describing resources (`ie://schema`, `ie://cypher-templ
 
 ## Documentation
 
-- **[Architecture Deep-Dive](docs/architecture.md)** -- Domain schema system, pipeline, storage modes
-- **[Technical Overview](docs/technical-overview.md)** -- Parser, graph, search, AI, MCP, REST details
-- **[Architectural Decisions](docs/decisions.md)** -- Key design choices and rationale
-- **[Project Context](docs/project-context.md)** -- What it does, why it exists, status
+- **[Architecture Deep-Dive](docs/architecture)** -- Domain schema system, pipeline, storage modes
+- **[Technical Overview](docs/technical-overview)** -- Parser, graph, search, AI, MCP, REST details
+- **[Architectural Decisions](docs/decisions)** -- Key design choices and rationale
+- **[Project Context](docs/project-context)** -- What it does, why it exists, status
 
 ---
 
