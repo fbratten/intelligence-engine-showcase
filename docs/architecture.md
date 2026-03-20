@@ -1,3 +1,8 @@
+---
+layout: default
+title: Architecture Deep-Dive
+---
+
 # Architecture -- Intelligence Engine
 
 ## Overview

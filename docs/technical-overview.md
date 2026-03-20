@@ -1,3 +1,8 @@
+---
+layout: default
+title: Technical Overview
+---
+
 # Technical Overview -- Intelligence Engine
 
 ## Parsing Layer

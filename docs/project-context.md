@@ -1,3 +1,8 @@
+---
+layout: default
+title: Project Context
+---
+
 # Project Context -- Intelligence Engine
 
 ## What It Does

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Architectural Decisions
+---
+
 # Architectural Decisions -- Intelligence Engine
 
 ## ADR-001: Python as Primary Language
