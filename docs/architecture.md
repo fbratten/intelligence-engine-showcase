@@ -18,36 +18,47 @@ The core abstraction is the **domain schema** -- a single YAML file that defines
 ```mermaid
 graph LR
     subgraph Input
-        A["Domain Schema<br/><small>code.yaml<br/>archaeology.yaml<br/>your-domain.yaml</small>"]
+        A[Domain Schema YAML]
     end
-
     subgraph Processing
-        B["Extractors<br/><small>Tree-sitter (8 langs)<br/>Custom YAML/JSON</small>"]
-        E["Embedding<br/><small>MiniLM-L6-v2<br/>LanceDB 384-dim</small>"]
+        B[Extractors]
+        E[Embedding Pipeline]
     end
-
     subgraph Storage
-        C["Knowledge Graph<br/><small>KuzuDB<br/>Entity_code<br/>Entity_archaeology<br/>Rel_code_CALLS</small>"]
+        C[Knowledge Graph - KuzuDB]
     end
-
     subgraph Search
-        D["Hybrid Search<br/><small>BM25 (0.35)<br/>Semantic (0.40)<br/>Graph (0.25)<br/>3-way RRF</small>"]
+        D[Hybrid Search - 3-way RRF]
     end
-
     subgraph Output
-        F["API Layer<br/><small>MCP: 15 tools<br/>REST: 33 endpoints<br/>Web: React + Sigma.js<br/>AI: 4 LLM providers</small>"]
+        F[API Layer]
     end
-
     subgraph Support
-        G["Change Detector<br/><small>git diff + hash</small>"]
-        H["Quality Engine<br/><small>Complexity, docs<br/>coupling, scores</small>"]
+        G[Change Detector]
+        H[Quality Engine]
     end
-
     A --> B --> C --> D --> F
     C --> E --> D
     G -.-> C
     H -.-> F
 ```
+
+**Components:**
+
+| Layer | What | Details |
+|-------|------|---------|
+| Domain Schema | YAML config | `code.yaml`, `archaeology.yaml`, extensible |
+| Extractors | Code: Tree-sitter | Python, JS, TS/TSX, Java, Go, HTML, CSS |
+| | Non-code: Custom | YAML/JSON readers |
+| Knowledge Graph | KuzuDB | `Entity_code`, `Rel_code_CALLS`, per-domain tables |
+| Embedding | MiniLM-L6-v2 | 384-dim vectors, LanceDB storage |
+| Hybrid Search | 3-way RRF | BM25 (0.35) + Semantic (0.40) + Graph (0.25) |
+| API | MCP Server | 15 tools for AI assistants |
+| | REST | 33 endpoints (FastAPI) |
+| | Web UI | React 18 + Sigma.js |
+| AI | LLM providers | Claude, OpenAI, Gemini, Ollama |
+| Change Detector | Incremental | git diff + SHA-256 hash fallback |
+| Quality | Metrics | Complexity, docs coverage, coupling |
 
 ---
 

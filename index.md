@@ -32,10 +32,10 @@ nav_order: 1
 
 ```mermaid
 graph LR
-    A["Domain Schema<br/><small>YAML</small>"] --> B["Extractors<br/><small>Tree-sitter / Custom</small>"]
-    B --> C["Knowledge Graph<br/><small>KuzuDB</small>"]
-    C --> D["Hybrid Search<br/><small>BM25 + Semantic + Graph</small>"]
-    D --> E["MCP / Web UI<br/><small>15 tools · 33 endpoints</small>"]
+    A[Domain Schema] --> B[Extractors]
+    B --> C[Knowledge Graph]
+    C --> D[Hybrid Search]
+    D --> E[MCP / Web UI]
 ```
 
 ---
