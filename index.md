@@ -30,13 +30,9 @@ nav_order: 1
 
 ## Architecture
 
-```mermaid
-graph LR
-    A[Domain Schema] --> B[Extractors]
-    B --> C[Knowledge Graph]
-    C --> D[Hybrid Search]
-    D --> E[MCP / Web UI]
-```
+| Domain Schema | → | Extractors | → | Knowledge Graph | → | Hybrid Search | → | MCP / Web UI |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| YAML configs | | Tree-sitter + Custom | | KuzuDB per-domain | | BM25 + Semantic + Graph | | 15 tools · 33 endpoints |
 
 ---
 

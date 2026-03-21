@@ -15,50 +15,28 @@ The core abstraction is the **domain schema** -- a single YAML file that defines
 
 ## High-Level Pipeline
 
-```mermaid
-graph LR
-    subgraph Input
-        A[Domain Schema YAML]
-    end
-    subgraph Processing
-        B[Extractors]
-        E[Embedding Pipeline]
-    end
-    subgraph Storage
-        C[Knowledge Graph - KuzuDB]
-    end
-    subgraph Search
-        D[Hybrid Search - 3-way RRF]
-    end
-    subgraph Output
-        F[API Layer]
-    end
-    subgraph Support
-        G[Change Detector]
-        H[Quality Engine]
-    end
-    A --> B --> C --> D --> F
-    C --> E --> D
-    G -.-> C
-    H -.-> F
-```
+### Pipeline Flow
 
-**Components:**
+| Domain Schema | → | Extractors | → | Knowledge Graph | → | Hybrid Search | → | API Layer |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| YAML configs | | Tree-sitter + Custom | | KuzuDB per-domain | | BM25 + Semantic + Graph | | MCP · REST · Web UI |
 
-| Layer | What | Details |
-|-------|------|---------|
-| Domain Schema | YAML config | `code.yaml`, `archaeology.yaml`, extensible |
-| Extractors | Code: Tree-sitter | Python, JS, TS/TSX, Java, Go, HTML, CSS |
-| | Non-code: Custom | YAML/JSON readers |
-| Knowledge Graph | KuzuDB | `Entity_code`, `Rel_code_CALLS`, per-domain tables |
-| Embedding | MiniLM-L6-v2 | 384-dim vectors, LanceDB storage |
-| Hybrid Search | 3-way RRF | BM25 (0.35) + Semantic (0.40) + Graph (0.25) |
-| API | MCP Server | 15 tools for AI assistants |
+### Component Details
+
+| Layer | Component | Details |
+|-------|-----------|---------|
+| **Domain Schema** | YAML config | `code.yaml`, `archaeology.yaml`, extensible |
+| **Extractors** | Tree-sitter (code) | Python, JS, TS/TSX, Java, Go, HTML, CSS |
+| | Custom (non-code) | YAML/JSON readers |
+| **Knowledge Graph** | KuzuDB | `Entity_code`, `Rel_code_CALLS`, per-domain tables |
+| **Embedding** | MiniLM-L6-v2 | 384-dim vectors, LanceDB storage |
+| **Hybrid Search** | 3-way RRF | BM25 (0.35) + Semantic (0.40) + Graph (0.25) |
+| **API** | MCP Server | 15 tools for AI assistants |
 | | REST | 33 endpoints (FastAPI) |
 | | Web UI | React 18 + Sigma.js |
-| AI | LLM providers | Claude, OpenAI, Gemini, Ollama |
-| Change Detector | Incremental | git diff + SHA-256 hash fallback |
-| Quality | Metrics | Complexity, docs coverage, coupling |
+| **AI** | LLM providers | Claude, OpenAI, Gemini, Ollama |
+| **Change Detector** | Incremental | git diff + SHA-256 hash fallback |
+| **Quality** | Metrics | Complexity, docs coverage, coupling |
 
 ---
 
