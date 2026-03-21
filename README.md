@@ -12,6 +12,16 @@ Build knowledge graphs from any structured domain using YAML schema definitions,
 
 ---
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Graph](screenshots/04-graph-v21.png) **Knowledge Graph** — 5000 nodes, 7048 edges | ![Cypher](screenshots/05-cypher-results.png) **Cypher Console** — 50 rows in 9ms |
+| ![Timeline](screenshots/06-dashboard-timeline.png) **Dashboard Timeline** — 3 indexing runs | ![Health](screenshots/08-dashboard-health.png) **Dashboard Health** — dead code, cycles, hubs |
+| ![Compare](screenshots/09-dashboard-compare.png) **Cross-Project Compare** | ![AI Memory](screenshots/10-dashboard-aimem.png) **AI Memory** — KuzuDB + Minna |
+
+---
+
 ## Architecture
 
 ```
