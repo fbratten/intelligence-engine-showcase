@@ -394,3 +394,28 @@ h1 {
   background: var(--neon-magenta) !important;
   color: #000 !important;
 }
+
+/* --- Mermaid Diagrams --- */
+.mermaid {
+  font-size: 16px !important;
+}
+.mermaid .nodeLabel {
+  font-size: 16px !important;
+  font-family: 'Orbitron', sans-serif !important;
+}
+.mermaid .edgeLabel {
+  font-size: 14px !important;
+}
+.mermaid .cluster-label .nodeLabel {
+  font-size: 14px !important;
+  font-family: 'Orbitron', sans-serif !important;
+}
+.mermaid .node rect,
+.mermaid .node polygon {
+  stroke: var(--neon-cyan) !important;
+  stroke-width: 2px !important;
+}
+.mermaid .cluster rect {
+  stroke: var(--neon-purple) !important;
+  fill: rgba(185, 103, 255, 0.05) !important;
+}
