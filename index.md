@@ -11,8 +11,7 @@ nav_order: 1
 ![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)
 ![Version](https://img.shields.io/badge/version-0.21.0-green.svg)
 
-| 1261+ Tests | 15 MCP Tools | 33 REST Endpoints | 8 Languages | 2 Domains |
-|:-----------:|:------------:|:-----------------:|:-----------:|:---------:|
+**1261+ Tests** · **15 MCP Tools** · **33 REST Endpoints** · **8 Languages** · **2 Domains**
 
 ---
 
