@@ -15,40 +15,38 @@ The core abstraction is the **domain schema** -- a single YAML file that defines
 
 ## High-Level Pipeline
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      INTELLIGENCE ENGINE                            │
-│                                                                     │
-│  ┌──────────────┐    ┌──────────────────┐    ┌──────────────────┐  │
-│  │ Domain       │    │ Extractors       │    │ Knowledge Graph  │  │
-│  │ Schema       │───>│                  │───>│                  │  │
-│  │              │    │ Tree-sitter      │    │ KuzuDB           │  │
-│  │ code.yaml    │    │  (8 languages)   │    │  Entity_code     │  │
-│  │ archaeology  │    │                  │    │  Entity_archae.. │  │
-│  │ your-domain  │    │ Custom YAML/JSON │    │  Rel_code_*      │  │
-│  │              │    │  extractors      │    │  Rel_archae.._*  │  │
-│  └──────────────┘    └──────────────────┘    └────────┬─────────┘  │
-│                                                       │             │
-│  ┌──────────────┐    ┌──────────────────┐             │             │
-│  │ Embedding    │    │ Search Engine    │<────────────┘             │
-│  │ Pipeline     │───>│                  │                           │
-│  │              │    │ BM25 (0.35)      │    ┌──────────────────┐  │
-│  │ MiniLM-L6   │    │ Semantic (0.40)  │───>│ API Layer        │  │
-│  │ LanceDB     │    │ Graph (0.25)     │    │                  │  │
-│  │ 384-dim      │    │                  │    │ MCP: 15 tools    │  │
-│  └──────────────┘    │ 3-way RRF       │    │ REST: 33 endpts  │  │
-│                      └──────────────────┘    │ Web: React/Sigma │  │
-│  ┌──────────────┐                            │                  │  │
-│  │ Change       │    ┌──────────────────┐    │ AI: 4 LLM       │  │
-│  │ Detector     │    │ Quality Engine   │    │   providers      │  │
-│  │ git diff +   │    │ Complexity, docs │    └──────────────────┘  │
-│  │ hash fallback│    │ coupling, scores │                           │
-│  └──────────────┘    └──────────────────┘                           │
-│                                                                     │
-│  Graph: KuzuDB (default) + NetworkX (fallback)                     │
-│  Vectors: LanceDB (all-MiniLM-L6-v2, 384-dim)                     │
-│  Incremental: git diff primary, SHA-256 hash fallback              │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph LR
+    subgraph Input
+        A["Domain Schema<br/><small>code.yaml<br/>archaeology.yaml<br/>your-domain.yaml</small>"]
+    end
+
+    subgraph Processing
+        B["Extractors<br/><small>Tree-sitter (8 langs)<br/>Custom YAML/JSON</small>"]
+        E["Embedding<br/><small>MiniLM-L6-v2<br/>LanceDB 384-dim</small>"]
+    end
+
+    subgraph Storage
+        C["Knowledge Graph<br/><small>KuzuDB<br/>Entity_code<br/>Entity_archaeology<br/>Rel_code_CALLS</small>"]
+    end
+
+    subgraph Search
+        D["Hybrid Search<br/><small>BM25 (0.35)<br/>Semantic (0.40)<br/>Graph (0.25)<br/>3-way RRF</small>"]
+    end
+
+    subgraph Output
+        F["API Layer<br/><small>MCP: 15 tools<br/>REST: 33 endpoints<br/>Web: React + Sigma.js<br/>AI: 4 LLM providers</small>"]
+    end
+
+    subgraph Support
+        G["Change Detector<br/><small>git diff + hash</small>"]
+        H["Quality Engine<br/><small>Complexity, docs<br/>coupling, scores</small>"]
+    end
+
+    A --> B --> C --> D --> F
+    C --> E --> D
+    G -.-> C
+    H -.-> F
 ```
 
 ---

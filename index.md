@@ -30,11 +30,12 @@ nav_order: 1
 
 ## Architecture
 
-```
-Domain Schema  →  Extractors       →  Knowledge Graph  →  Hybrid Search  →  MCP / Web UI
-  (YAML)           tree-sitter or      Entity_<domain>     BM25 + Semantic    15 MCP tools
-  code,            custom YAML/JSON    Rel_<domain>_*      + Graph RRF        33 REST endpoints
-  archaeology      extractors          KuzuDB per-domain   domain-partitioned React + Sigma.js
+```mermaid
+graph LR
+    A["Domain Schema<br/><small>YAML</small>"] --> B["Extractors<br/><small>Tree-sitter / Custom</small>"]
+    B --> C["Knowledge Graph<br/><small>KuzuDB</small>"]
+    C --> D["Hybrid Search<br/><small>BM25 + Semantic + Graph</small>"]
+    D --> E["MCP / Web UI<br/><small>15 tools · 33 endpoints</small>"]
 ```
 
 ---
