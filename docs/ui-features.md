@@ -13,7 +13,7 @@ A comprehensive reference for every feature of the Intelligence Engine web UI.
 
 The centerpiece of the UI is an interactive force-directed graph that renders your codebase as a network of entities and relationships.
 
-![Graph](screenshots/04-agent-comm-graph-clean.png)
+![Graph](../screenshots/04-agent-comm-graph-clean.png)
 
 ### Layout
 
